@@ -1,0 +1,39 @@
+# Explicit V6/V7 rebaseline resolutions
+
+Each resolution is binding for this design baseline; it changes no production state. ADR-001 governs authority.
+
+| ID | Source conflict/gap | Resolution | Related decision |
+|---|---|---|---|
+| C-001 | V6 runbook/prompts say V4, M1–M14 and old bootstrap branch/body | Archive execution instructions; use M0.0/M0.1/M0.2 and V1.0–V1.10 roadmap. No inferred translation from old M-number to release. | ADR-001 |
+| C-002 | V6/V7 require working M0.0 before architecture; owner now forbids coding | Deliver M0.1 design first as a documentation-only exception explicitly authorized by current request. M0.0 evidence and M0.2 repository approval remain pending before feature coding. | ADR-002 |
+| C-003 | V6 Master §§92–118 say V1 MUST; V7 phases these capabilities | V1 is the release family. Studio/private extension foundations V1.0–1.1, full Studio V1.7, ecosystem GA V1.10. No deletion. | ADR-003 |
+| C-004 | V7 roadmap omits explicit website/CMS/eCommerce proof | Add CMS/multisite/headless/SEO proof V1.7 and checkout/returns proof V1.8; no ranking promise. | ADR-003 |
+| C-005 | Broad universal scope vs narrow initial ICP | All domain contracts now; professional services initial internal/GA journey; packs and remote specialist systems cover vertical depth. | ADR-004 |
+| C-006 | V6 workforce strategy has outdated category | Hayool OS masterbrand; Extensible Business Operating Platform vision; project-company initial GTM; Work Graph remains fundamental. | ADR-004 |
+| C-007 | Country-only configuration vs cross-border transaction | Jurisdiction Context resolves all material parties, work, service, processing and payment facts; country is not a permission shortcut. | ADR-010 |
+| C-008 | Eligibility values mix approval/control/manual and allow | Structured result with executable boolean, blockers and cumulative obligations. Pending review is non-executable. Conflicting binding obligations block the affected action. | ADR-010 |
+| C-009 | Country matrix mixes maturity, publisher and runtime state | Three independent axes: design/evidence maturity, publisher/support ownership, execution availability. | ADR-010 |
+| C-010 | Iran domestic default was incorrectly phrased as a fixed Core fact triad | Owner product mode DOMESTIC_ONLY remains; signed Iran Country Pack defines required facts/evaluator. An illustrative synthetic triad is only a test fixture. Unknown/no approved pack => no live rankable candidate; no legal conclusion. | ADR-031 |
+| C-011 | 'Open country' could imply unconditional global supply | Domestic/regional/allowlist/global modes are explicit approved pack policy, never inferred from political category. Global still intersects corridor, provider, work and transfer eligibility. | ADR-031 |
+| C-012 | V7/07 §8 and inherited research make current-law/vendor assertions | Research registry retains source observations; no executable legal policy without applicability review and approval. Exact launch dates/provider terms revalidated at activation. | ADR-012 |
+| C-013 | Jev preferred vs rational AI/provider neutrality | Jev is a candidate semantic adapter, never mandatory provider. No undocumented model/version/price claim; empirical eval and terms approval first. | ADR-016 |
+| C-014 | Price floor 'hard' vs approval bypass language | Legal/fair compensation floors cannot be overridden. Business floor exception only by authorized management with scoped amount, expiry, reason, dual control where needed; AI cannot grant it. | ADR-014 |
+| C-015 | Audit immutability vs privacy deletion | Minimal immutable transaction/audit envelopes; personal payload in separately governed stores; deletion propagation and lawful hold adjudication. No infinite personal-data retention justified by audit alone. | ADR-013 |
+| C-016 | Hosted plugin/exceptionally reviewed partner module could bypass isolation | Third-party execution never in main API. Partner privilege cannot be granted by label; first-party adoption is reviewed ownership change under supply-chain controls. Remote/declarative first. | ADR-018 |
+| C-017 | API semver major permission change vs backward-compatible implementation | API compatibility version and consent version tracked separately; any privilege/egress/billing expansion requires consent even if code change is minor. | ADR-019 |
+| C-018 | V1.4 legal block can freeze unrelated intelligence/GA | Outcome dependencies form a DAG; no skipped failed gate may be claimed passed. Independent V1.5/V1.6 SaaS work may proceed while managed mode remains disabled and unclaimed. | ADR-003 |
+| C-019 | RLS alone could be treated as sufficient | Application auth + forced RLS/non-bypass role + composite tenant keys + every derived surface isolation. | ADR-006 |
+| C-020 | Finance/webhook timeout risks duplicate external charge | Durable attempt key; ambiguous outcome remains reconciliation-pending; no new payment attempt until resolved. | ADR-014 |
+| C-021 | All V1 optional/advanced capabilities could disappear | Retained family requirements and post-V1 outcome contracts; no feature removed by 'simplification'. Hosted untrusted runtime, advanced WMS and specialist regulated core remain explicit future/partner paths. | ADR-003 |
+| C-022 | V6 repeated Constitution/Guardrail heading numbers | Stable GR IDs remain authority; cite heading text plus GR ID, never duplicate ordinal number alone. No safety principle weakened. | ADR-001 |
+| C-023 | Source files exist but no repository/implementation proof | Current workspace is not a Git repository; no project remote was supplied. Record branch/SHA/CI/staging unknown, not absent everywhere. | ADR-002 |
+| C-024 | Budget/Cost Center only implicit in finance/procurement, though owner requires V1.0 | Independent Budget/Cost/Profit Center REQs, versioned plan, ledger-backed actual, thresholds, BUD test and V1.0 gate. | ADR-027 |
+| C-025 | Issue/risk/incident/support/security cases collapsed in one Work row | Distinct states/owners/tests and typed links; operational incident V1.0, support/SLA V1.1, security restricted. | ADR-028 |
+| C-026 | Asset and secrets combined, risking plaintext leakage and weak lifecycle proof | Separate Assets and Vault modules, REQs, domain contracts and AST/VLT suites. | ADR-029 |
+| C-027 | One Meeting line misses consent/import/derivatives/approval and optionality | End-to-end sourced workflow plus independent capture, proposal and provider/retention contracts; AI-off and local/private routes. | ADR-030 |
+| C-028 | IR DOMESTIC_ONLY confused product restriction with fixed legal domestic definition | Supersede ADR-011 with pack-defined required facts/evaluator and no live ranking without validated pack; preserve owner default. | ADR-031 |
+| C-029 | V6/V7 GTM detail lacks one canonical final market/brand/psychology/value narrative | New market final document resolves category, loop, audience, trust, validation, trademark/claims and anti-overpromise without fabricated research. | ADR-004/022 |
+| C-030 | V7.1 M0.1 review digest invalidated by V7.2 design edits; roadmap wording conflicted | Fresh V7.2 digest, two independent read-only reviews, manifest verification, one exact gate status across state/roadmap/review/index. M0.0/M0.2 remain pending. | ADR-002/025 |
+| C-031 | Multi-lifecycle REQs made independently owned behaviors hard to trace | Preserve V7.1 IDs with narrowed primary contract and explicit new IDs/test oracles; audit all original 138 in GRANULARITY_REVIEW. | ADR-025 |
+
+Proposed V6 owner defaults OD-001–030 are retained as working defaults; this package does not pretend they were separately signed. Actual commercial figures, contracts and ownership choices remain in OWNER_DECISIONS.md. Current explicit owner instructions about scope, Iran sourcing and no-code stage take precedence.

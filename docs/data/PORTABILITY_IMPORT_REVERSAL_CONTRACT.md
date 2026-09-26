@@ -1,0 +1,7 @@
+# Import correction and export exception contract — V1.1
+
+Status: specified; REQ-TRU-012 and REQ-TRU-016 have separate owners and TEST IDs. Import has preview/mapping/provenance, dry-run, idempotent batch, commit, reconciliation, correction/compensation and closure. A failed batch can roll back before commit; a completed import must be reversibly corrected where allowed without physically deleting immutable posted journals, accepted work or legally held evidence. The correction references original row and permission/approval. Cross-tenant matching is forbidden.
+
+Export has scoped machine-readable data, schema/version/source references, completeness report, supported round-trip mapping, and explicit field-level disclosure of omitted/retained data and reviewed legal-hold/retention basis where legally disclosable. Rights requests and export do not automatically erase accounting history; non-disclosable details are summarized safely for requester and qualified reviewer. A missing connector or unsupported field is a visible exception, not silent omission.
+
+`TEST-REQ-TRU-012`: dry-run duplicate/conflict, completed batch with a bad but posted financial import, inverse/corrective posting and repeated undo; independent totals and evidence remain reproducible. `TEST-REQ-TRU-016`: export/import round-trip for allowed data, expired/revoked request and legal retention exception; unauthorized fields never leak, requester receives scoped exception report and source lineage. Both tests run DATA/TEN/FIN negative and restore variants.
