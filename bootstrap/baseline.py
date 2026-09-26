@@ -7,9 +7,12 @@ import hashlib
 import json
 import os
 import re
+import selectors
+import signal
 import subprocess
 import sys
-import unittest
+import tempfile
+import time
 import zipfile
 from pathlib import Path
 
@@ -23,6 +26,9 @@ SECRET_PATTERNS = {
     "aws_access_key": re.compile(rb"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b"),
 }
 ALLOWED_LICENSES = {"MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "PostgreSQL", "MPL-2.0", "CC-BY-4.0", "MIXED", "INTERNAL"}
+TEST_IMAGE = "docker.io/library/python@sha256:44ff437bba879d4941b710a369a8f19266aea34b29002807f0c487fabc9eec9b"
+TEST_TIMEOUT_SECONDS = 90
+TEST_OUTPUT_LIMIT_BYTES = 1_048_576
 
 
 def git(*args: str) -> str:
@@ -73,21 +79,41 @@ def security() -> list[str]:
     kill = json.loads((ROOT / "bootstrap/kill_switch.json").read_text(encoding="utf-8"))
     if kill != {"engaged": False, "autonomous_writes_enabled": False, "merge_enabled": False, "deploy_enabled": False, "external_calls_enabled": False}:
         errors.append("M0 shadow kill switch policy changed")
-    workflows = sorted(p for p in (ROOT / ".github/workflows").iterdir() if p.suffix in {".yml", ".yaml"})
-    if not workflows:
-        return ["no CI workflow"]
+    workflow_dir = ROOT / ".github/workflows"
+    workflows = sorted(p for p in workflow_dir.iterdir() if p.suffix in {".yml", ".yaml"})
+    expected = {"engineering-baseline.yml", "engineering-trusted-gate.yml"}
+    if {p.name for p in workflows} != expected:
+        errors.append("unexpected or missing M0 workflow")
     for workflow in workflows:
-        text = workflow.read_text(encoding="utf-8")
-        for forbidden in ("pull_request_target", "workflow_run:", "write-all", "secrets."):
-            if forbidden in text:
-                errors.append(f"unsafe workflow token in {workflow.name}: {forbidden}")
-        if re.search(r"(?im)\b[A-Za-z_-]+:\s*write\b|permissions:\s*write-all\b", text):
-            errors.append(f"workflow {workflow.name} requests write permission")
-        for action in re.findall(r"^\s*-?\s*uses:\s*([^\s#]+)", text, re.MULTILINE):
+        body = workflow.read_text(encoding="utf-8")
+        if "pull_request_target" in body or "secrets." in body or "write-all" in body:
+            errors.append(f"unsafe workflow token in {workflow.name}")
+        for action in re.findall(r"^\s*-?\s*uses:\s*([^\s#]+)", body, re.MULTILINE):
             if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}", action):
                 errors.append(f"unpinned action in {workflow.name}")
-        if "contents: read" not in text:
+        if "contents: read" not in body:
             errors.append(f"workflow {workflow.name} lacks explicit read-only contents permission")
+        if workflow.name == "engineering-trusted-gate.yml":
+            if not all(token in body for token in (
+                "workflow_run:", "workflows: [engineering-candidate]",
+                "statuses: write", "actions: read", "ref: ${{ github.sha }}",
+                "bootstrap/trusted_gate.py", "--post-status",
+            )):
+                errors.append("trusted workflow loses default-branch gate contract")
+            # This job receives status-writing authority. It may read a PR
+            # artifact as data, but must never check out or execute PR code.
+            if any(token in body for token in (
+                "github.event.workflow_run.head_sha }}", "github.event.pull_request.head.sha }}",
+                "--privileged", "docker run", "npm ", "pip install",
+            )):
+                errors.append("trusted workflow can execute untrusted PR code")
+        else:
+            if "workflow_run:" in body or "statuses: write" in body or re.search(
+                r"(?im)\b[A-Za-z_-]+:\s*write\b|permissions:\s*write-all\b", body
+            ):
+                errors.append("candidate workflow requests privileged permission")
+            if "pull_request:" not in body or "persist-credentials: false" not in body:
+                errors.append("candidate workflow loses unprivileged PR contract")
     return errors
 
 
@@ -143,17 +169,27 @@ def secrets() -> list[str]:
 
 def test_integrity(base_sha: str, target_sha: str) -> list[str]:
     errors: list[str] = []
+    # The initial README-only base has no gate; its bootstrap is a one-time
+    # human-reviewed exception. Once a base has the gate, no candidate can
+    # change or add workflows or trusted policy in its own PR.
+    base_has_gate = subprocess.run(
+        ["git", "cat-file", "-e", f"{base_sha}:bootstrap/trusted_gate.py"],
+        cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        check=False,
+    ).returncode == 0
     for line in git("diff", "--name-status", base_sha, target_sha).splitlines():
         columns = line.split("\t")
         status = columns[0]
         paths = columns[1:]
-        protected = any(
-            path.startswith(("bootstrap/tests/", "tests/", ".github/workflows/"))
-            or path == "bootstrap/baseline.py"
-            for path in paths
-        )
-        if protected and not status.startswith("A"):
-            errors.append("existing test or gate policy changed or removed: " + " -> ".join(paths))
+        for path in paths:
+            if path.startswith(".github/workflows/") or path in {
+                "bootstrap/baseline.py", "bootstrap/trusted_gate.py",
+                "bootstrap/engrun.py", "bootstrap/engrun.schema.json",
+            }:
+                if base_has_gate:
+                    errors.append("candidate changed trusted gate or workflow: " + path)
+            elif path.startswith(("bootstrap/tests/", "bootstrap/regression_tests/", "tests/")) and not status.startswith("A"):
+                errors.append("existing test changed or removed: " + path)
     return errors
 
 
@@ -174,9 +210,92 @@ def traceability() -> list[str]:
 
 
 def unit() -> list[str]:
-    suite = unittest.defaultTestLoader.discover(str(ROOT / "bootstrap/tests"), pattern="test_*.py")
-    result = unittest.TextTestRunner(stream=sys.stderr, verbosity=1).run(suite)
-    return [] if result.wasSuccessful() and result.testsRun > 0 else ["unit suite failed or empty"]
+    """Run candidate tests outside this evaluator, with no host write or secret access.
+
+    The Docker client is trusted code; the untrusted Python interpreter runs only
+    inside a resource-limited container. A missing Docker daemon fails closed.
+    """
+    with tempfile.TemporaryDirectory(prefix="hayool-unit-") as temporary:
+        cid_file = Path(temporary) / "container-id"
+        command = [
+            "docker", "run", "--rm", "--pull=missing", "--platform=linux/amd64",
+            "--cidfile", str(cid_file), "--network=none", "--read-only",
+            "--cap-drop=ALL", "--security-opt=no-new-privileges",
+            "--pids-limit=64", "--memory=512m", "--memory-swap=512m",
+            "--cpus=1", "--user=65534:65534",
+            "--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=64m",
+            "--mount", f"type=bind,src={ROOT},dst=/candidate,readonly",
+            "--workdir=/candidate", "--env=HOME=/tmp",
+            TEST_IMAGE, "python3", "-I", "-B", "-c",
+            "import sys,unittest; "
+            "s=unittest.defaultTestLoader.discover('/candidate/bootstrap/tests',pattern='test_*.py'); "
+            "n=s.countTestCases(); r=unittest.TextTestRunner(verbosity=1).run(s); "
+            "sys.exit(0 if n>0 and r.wasSuccessful() else 1)",
+        ]
+        # Do not give the Docker client a GitHub token, cloud credentials, or a
+        # user Docker configuration. No environment is forwarded into the image.
+        client_env = {"PATH": "/usr/bin:/bin", "HOME": temporary, "DOCKER_CONFIG": temporary}
+        try:
+            process = subprocess.Popen(
+                command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                env=client_env, start_new_session=True,
+            )
+        except OSError as exc:
+            return [f"isolated unit runner unavailable: {exc.__class__.__name__}"]
+        output = bytearray()
+        reason = ""
+        try:
+            assert process.stdout is not None
+            with selectors.DefaultSelector() as selector:
+                selector.register(process.stdout, selectors.EVENT_READ)
+                deadline = time.monotonic() + TEST_TIMEOUT_SECONDS
+                while True:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        reason = "isolated unit suite exceeded time limit"
+                        break
+                    if not selector.select(min(remaining, 0.5)):
+                        continue
+                    chunk = os.read(process.stdout.fileno(), min(65536, TEST_OUTPUT_LIMIT_BYTES + 1 - len(output)))
+                    if not chunk:
+                        break
+                    output.extend(chunk)
+                    if len(output) > TEST_OUTPUT_LIMIT_BYTES:
+                        reason = "isolated unit suite exceeded output limit"
+                        break
+            if reason and process.poll() is None:
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            exit_code = process.wait(timeout=5)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            reason = f"isolated unit runner failed: {exc.__class__.__name__}"
+            if process.poll() is None:
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                process.wait(timeout=5)
+            exit_code = process.returncode
+        finally:
+            if process.stdout is not None:
+                process.stdout.close()
+            # Killing the Docker client does not guarantee container cleanup.
+            if reason and cid_file.is_file():
+                cid = cid_file.read_text(encoding="ascii").strip()
+                if re.fullmatch(r"[0-9a-f]{64}", cid):
+                    subprocess.run(
+                        ["docker", "rm", "-f", cid], env=client_env,
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                        timeout=10, check=False,
+                    )
+        if reason:
+            return [reason]
+        if exit_code != 0:
+            detail = output.decode("utf-8", errors="replace")[-2000:]
+            return [f"isolated unit suite failed (exit {exit_code}): {detail}"]
+        return []
 
 
 def main() -> int:

@@ -17,12 +17,25 @@ class EngineeringRunGateTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.target = "a" * 40
         self.base = "b" * 40
-        report = {"base_sha": self.base, "target_sha": self.target, "workspace_clean": True, "checks": {name: "PASS" for name in REQUIRED_CHECKS}, "source": "github_actions", "conclusion": "success", "url": "https://github.com/xbroute/hayool-os/actions/runs/1"}
+        baseline_checks = REQUIRED_CHECKS - {"ci"}
+        report = {"schema_version": 1, "base_sha": self.base, "target_sha": self.target, "policy_source": "base", "workspace_clean": True, "checks": {name: "PASS" for name in baseline_checks}, "errors": {name: [] for name in baseline_checks}}
         self._write("baseline.json", report)
+        self._write("ci.json", {"base_sha": self.base, "target_sha": self.target, "workspace_clean": True, "checks": {"ci": "PASS"}, "source": "github_actions", "conclusion": "success", "url": "https://github.com/xbroute/hayool-os/actions/runs/1"})
+        self._write("trusted-gate.json", {
+            "schema_version": 1, "decision": "PASS", "github_api_verified": True,
+            "repository": "xbroute/hayool-os", "pr_number": 9,
+            "base_sha": self.base, "head_sha": self.target, "policy_sha": self.base,
+            "candidate_run_id": 1, "candidate_run_attempt": 1,
+            "candidate_check_run_id": 11, "candidate_artifact_id": 12,
+            "candidate_artifact_digest": "sha256:" + "d" * 64,
+            "baseline_json_sha256": self._hash("baseline.json"),
+            "workflow_sha256": "e" * 64, "baseline_policy_sha256": "f" * 64,
+            "checks": {name: "PASS" for name in baseline_checks}, "errors": [],
+        })
         for name in ("review-1.json", "review-2.json"):
             self._write(name, {"target_sha": self.target, "read_only": True, "verdict": "PASS"})
         self.run = {
-            "schema_version": 1,
+            "schema_version": 2,
             "run_id": "ENG-RUN-test",
             "mode": "shadow",
             "repository": "xbroute/hayool-os",
@@ -46,9 +59,12 @@ class EngineeringRunGateTests(unittest.TestCase):
             ],
             "hard_checks": [
                 {"name": name, "status": "PASS", "target_sha": self.target,
-                 "report_path": "baseline.json", "report_sha256": self._hash("baseline.json")}
+                 "report_path": "ci.json" if name == "ci" else "baseline.json",
+                 "report_sha256": self._hash("ci.json" if name == "ci" else "baseline.json")}
                 for name in sorted(REQUIRED_CHECKS)
             ],
+            "trusted_gate": {"run_id": 2, "run_attempt": 1, "artifact_id": 22,
+                             "report_path": "trusted-gate.json", "report_sha256": self._hash("trusted-gate.json")},
             "limits": {"repair_iterations": 0, "elapsed_seconds": 180, "external_cost_usd": 0, "external_cost_cap_usd": 0},
             "kill_switch": {"engaged": False, "autonomous_writes_enabled": False, "merge_enabled": False,
                             "deploy_enabled": False, "external_calls_enabled": False},
@@ -71,17 +87,19 @@ class EngineeringRunGateTests(unittest.TestCase):
         report["checks"]["secrets"] = "FAIL"
         self._write("baseline.json", report)
         for check in self.run["hard_checks"]:
-            check["report_sha256"] = self._hash("baseline.json")
+            if check["name"] != "ci":
+                check["report_sha256"] = self._hash("baseline.json")
         errors = evaluate(self.run, self.root, self.target)
         self.assertTrue(any("hard check secrets conflicts" in error for error in errors), errors)
 
     def test_ci_failure_cannot_be_replaced_by_local_pass(self):
-        report = json.loads((self.root / "baseline.json").read_text())
+        report = json.loads((self.root / "ci.json").read_text())
         report["checks"]["ci"] = "FAIL"
         report["conclusion"] = "failure"
-        self._write("baseline.json", report)
+        self._write("ci.json", report)
         for check in self.run["hard_checks"]:
-            check["report_sha256"] = self._hash("baseline.json")
+            if check["name"] == "ci":
+                check["report_sha256"] = self._hash("ci.json")
         errors = evaluate(self.run, self.root, self.target)
         self.assertTrue(any("GitHub CI proof" in error for error in errors), errors)
 
@@ -92,19 +110,51 @@ class EngineeringRunGateTests(unittest.TestCase):
 
     def test_live_ci_verification_accepts_exact_executed_run(self):
         responses = {
-            "actions/runs/1": {"head_sha": self.target, "event": "pull_request", "status": "completed", "conclusion": "success", "path": ".github/workflows/engineering-baseline.yml", "pull_requests": [{"base": {"sha": self.base, "repo": {"name": "hayool-os"}}, "head": {"sha": self.target, "ref": "codex/shadow-test"}}]},
-            "actions/runs/1/jobs": {"jobs": [{"name": "engineering-baseline", "head_sha": self.target, "conclusion": "success", "steps": [{"name": name, "conclusion": "success"} for name in ("Load policy from PR base", "Run deterministic M0 checks on PR head", "Preserve check evidence")]}]},
-            "actions/runs/1/artifacts": {"artifacts": [{"name": "engineering-baseline-" + self.target, "expired": False}]},
+            "actions/runs/1": {"id": 1, "repository": {"full_name": "xbroute/hayool-os"}, "name": "engineering-candidate", "run_attempt": 1, "head_sha": self.target, "event": "pull_request", "status": "completed", "conclusion": "success", "path": ".github/workflows/engineering-baseline.yml", "pull_requests": [{"number": 9, "base": {"sha": self.base, "repo": {"name": "hayool-os"}}, "head": {"sha": self.target, "ref": "codex/shadow-test"}}]},
+            "actions/runs/1/jobs": {"jobs": [{"id": 11, "name": "engineering-baseline", "head_sha": self.target, "conclusion": "success", "steps": [{"name": name, "conclusion": "success"} for name in ("Load policy from PR base", "Run deterministic M0 checks on PR head", "Preserve check evidence")]}]},
+            "actions/runs/1/artifacts": {"artifacts": [{"id": 12, "name": "engineering-baseline-" + self.target, "expired": False, "digest": "sha256:" + "d" * 64}]},
+            "actions/runs/2": {"id": 2, "repository": {"full_name": "xbroute/hayool-os"}, "event": "workflow_run", "head_branch": "main", "head_sha": self.base, "run_attempt": 1, "status": "completed", "conclusion": "success", "path": ".github/workflows/engineering-trusted-gate.yml"},
+            "actions/runs/2/jobs": {"jobs": [{"name": "trusted-gate", "conclusion": "success", "steps": [{"name": name, "conclusion": "success"} for name in ("Verify exact candidate evidence with default-branch policy", "Preserve trusted-gate evidence")]}]},
+            "actions/runs/2/artifacts": {"artifacts": [{"id": 22, "name": "engineering-trusted-gate-1", "expired": False, "workflow_run": {"id": 2}}]},
+            "git/ref/heads/main": {"object": {"sha": self.base}},
         }
         artifact = json.loads((self.root / "baseline.json").read_text())
-        artifact["policy_source"] = "base"
-        with patch("bootstrap.engrun._github_json", side_effect=lambda path: responses[path]), patch("bootstrap.engrun._download_baseline", return_value=artifact):
+        trusted_bytes = (self.root / "trusted-gate.json").read_bytes()
+        with patch("bootstrap.engrun._github_json", side_effect=lambda path: responses[path]), patch("bootstrap.engrun._download_baseline", return_value=artifact), patch("bootstrap.engrun._download_trusted", return_value=trusted_bytes):
             self.assertEqual(verify_github_ci(self.run, self.root, self.target), [])
+            responses["actions/runs/2"]["conclusion"] = "failure"
+            self.assertTrue(verify_github_ci(self.run, self.root, self.target))
+            responses["actions/runs/2"]["conclusion"] = "success"
+            responses["git/ref/heads/main"]["object"]["sha"] = "c" * 40
+            self.assertTrue(verify_github_ci(self.run, self.root, self.target))
+            responses["git/ref/heads/main"]["object"]["sha"] = self.base
             responses["actions/runs/1"]["pull_requests"][0]["base"]["sha"] = "c" * 40
             self.assertTrue(verify_github_ci(self.run, self.root, self.target))
             responses["actions/runs/1"]["pull_requests"][0]["base"]["sha"] = self.base
             artifact["checks"]["secrets"] = "FAIL"
             self.assertTrue(verify_github_ci(self.run, self.root, self.target))
+
+    def test_failure_injection_ai_pass_votes_cannot_override_trusted_gate_failure(self):
+        report = json.loads((self.root / "trusted-gate.json").read_text())
+        report["decision"] = "FAIL"
+        report["errors"] = ["candidate workflow differs from trusted policy bytes"]
+        self._write("trusted-gate.json", report)
+        self.run["trusted_gate"]["report_sha256"] = self._hash("trusted-gate.json")
+        self.assertTrue(all(review["verdict"] == "PASS" for review in self.run["reviewers"]))
+        errors = evaluate(self.run, self.root, self.target)
+        self.assertTrue(any("trusted gate report failed" in error for error in errors), errors)
+
+    def test_regression_pr_controlled_workflow_cannot_self_attest(self):
+        """A PR-controlled baseline workflow alone must never authorize ENG-RUN."""
+        del self.run["trusted_gate"]
+        responses = {
+            "actions/runs/1": {"id": 1, "repository": {"full_name": "xbroute/hayool-os"}, "name": "engineering-candidate", "run_attempt": 1, "head_sha": self.target, "event": "pull_request", "status": "completed", "conclusion": "success", "path": ".github/workflows/engineering-baseline.yml@refs/pull/9/merge", "pull_requests": [{"number": 9, "base": {"sha": self.base, "repo": {"name": "hayool-os"}}, "head": {"sha": self.target, "ref": "codex/shadow-test"}}]},
+            "actions/runs/1/jobs": {"jobs": [{"id": 11, "name": "engineering-baseline", "head_sha": self.target, "conclusion": "success", "steps": [{"name": name, "conclusion": "success"} for name in ("Load policy from PR base", "Run deterministic M0 checks on PR head", "Preserve check evidence")]}]},
+            "actions/runs/1/artifacts": {"artifacts": [{"id": 12, "name": "engineering-baseline-" + self.target, "expired": False, "digest": "sha256:" + "d" * 64}]},
+        }
+        artifact = json.loads((self.root / "baseline.json").read_text())
+        with patch("bootstrap.engrun._github_json", side_effect=lambda path: responses[path]), patch("bootstrap.engrun._download_baseline", return_value=artifact):
+            self.assertEqual(verify_github_ci(self.run, self.root, self.target), ["candidate GitHub CI verified; trusted default-branch gate run is absent"])
 
     def test_changed_path_claim_must_equal_git_diff(self):
         with patch("bootstrap.engrun.subprocess.check_output", return_value="docs/adr/ADR_CATALOG.md\n"):

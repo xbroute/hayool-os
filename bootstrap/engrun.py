@@ -63,7 +63,7 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
         if not condition:
             errors.append(message)
 
-    require(run.get("schema_version") == 1, "unsupported schema_version")
+    require(run.get("schema_version") == 2, "unsupported schema_version")
     require(bool(re.fullmatch(r"ENG-RUN-[A-Za-z0-9_-]+", str(run.get("run_id", "")))), "invalid run_id")
     require(run.get("mode") == "shadow", "M0 runner permits shadow mode only")
     require(run.get("repository") == "xbroute/hayool-os", "repository mismatch")
@@ -126,6 +126,34 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
         except (OSError, ValueError, AttributeError):
             errors.append(f"hard check {name} report unreadable")
 
+    gate = run.get("trusted_gate")
+    require(isinstance(gate, dict), "trusted gate evidence missing")
+    if isinstance(gate, dict):
+        require(all(type(gate.get(key)) is int and gate[key] > 0 for key in ("run_id", "run_attempt", "artifact_id")), "trusted gate run or artifact identity invalid")
+        gate_path = str(gate.get("report_path", ""))
+        require(_evidence(root, gate_path, str(gate.get("report_sha256", ""))), "trusted gate report missing or changed")
+        try:
+            report_path = (root / gate_path).resolve()
+            if not report_path.is_relative_to(root.resolve()):
+                raise ValueError("trusted gate report escaped evidence root")
+            gate_report = json.loads(report_path.read_text(encoding="utf-8"))
+            require(
+                gate_report.get("schema_version") == 1
+                and gate_report.get("decision") == "PASS"
+                and gate_report.get("github_api_verified") is True
+                and gate_report.get("repository") == run.get("repository")
+                and gate_report.get("base_sha") == run.get("base_sha")
+                and gate_report.get("head_sha") == expected_sha
+                and gate_report.get("policy_sha") == run.get("policy_sha")
+                and gate_report.get("errors") == []
+                and isinstance(gate_report.get("checks"), dict)
+                and set(gate_report["checks"]) == REQUIRED_CHECKS - {"ci"}
+                and all(status == "PASS" for status in gate_report["checks"].values()),
+                "trusted gate report failed or has conflicting exact-SHA evidence",
+            )
+        except (OSError, ValueError, AttributeError, TypeError):
+            errors.append("trusted gate report unreadable")
+
     limits = run.get("limits") or {}
     require(isinstance(limits.get("repair_iterations"), int) and 0 <= limits["repair_iterations"] <= 3, "repair cap exceeded")
     require(isinstance(limits.get("elapsed_seconds"), (int, float)) and 0 <= limits["elapsed_seconds"] <= 3600, "time cap exceeded")
@@ -160,8 +188,22 @@ def _download_baseline(run_id: str, artifact_name: str) -> dict:
         return json.loads((Path(directory) / "baseline.json").read_text(encoding="utf-8"))
 
 
+def _download_trusted(run_id: str, artifact_name: str) -> bytes:
+    with tempfile.TemporaryDirectory(prefix="hayool-m0-trusted-") as directory:
+        subprocess.run(
+            ["gh", "run", "download", run_id, "--repo", "xbroute/hayool-os",
+             "--name", artifact_name, "--dir", directory],
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=30,
+        )
+        return (Path(directory) / "trusted-gate.json").read_bytes()
+
+
 def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
-    """Authenticate a claimed CI result against the repository's live Actions API."""
+    """Require both candidate CI and a default-branch trusted verifier run.
+
+    The PR-owned workflow/artifact cannot attest its own policy. The trusted
+    workflow must be a separate successful ``workflow_run`` from exact main.
+    """
     check = next((c for c in run.get("hard_checks", []) if isinstance(c, dict) and c.get("name") == "ci"), None)
     if not check:
         return ["GitHub CI check is absent"]
@@ -184,11 +226,15 @@ def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
         ]
         if not (
             matching_prs
+            and observed.get("id") == int(run_id)
+            and observed.get("repository", {}).get("full_name") == run.get("repository")
             and observed.get("head_sha") == expected_sha
             and observed.get("event") == "pull_request"
+            and observed.get("name") == "engineering-candidate"
             and observed.get("status") == "completed"
             and observed.get("conclusion") == "success"
-            and str(observed.get("path", "")).split("@", 1)[0].endswith(".github/workflows/engineering-baseline.yml")
+            and str(observed.get("path", "")).split("@", 1)[0] == ".github/workflows/engineering-baseline.yml"
+            and type(observed.get("run_attempt")) is int
         ):
             return ["GitHub Actions run is not successful for exact SHA and baseline workflow"]
         good_jobs = [
@@ -201,17 +247,20 @@ def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
             and {"Load policy from PR base", "Run deterministic M0 checks on PR head", "Preserve check evidence"}
                 <= {step.get("name") for step in job["steps"] if step.get("conclusion") == "success"}
         ]
-        if not good_jobs:
+        if len(good_jobs) != 1 or type(good_jobs[0].get("id")) is not int:
             return ["GitHub Actions baseline job did not execute successfully"]
         artifact_name = f"engineering-baseline-{expected_sha}"
-        if not any(
-            artifact.get("name") == artifact_name and artifact.get("expired") is False
-            for artifact in artifacts
-        ):
+        selected = [artifact for artifact in artifacts if artifact.get("name") == artifact_name and artifact.get("expired") is False]
+        if len(selected) != 1 or type(selected[0].get("id")) is not int or not re.fullmatch(r"sha256:[0-9a-f]{64}", str(selected[0].get("digest", ""))):
             return ["GitHub Actions exact-SHA baseline artifact missing"]
+        candidate_artifact = selected[0]
         observed_baseline = _download_baseline(run_id, artifact_name)
         local_check = next(c for c in run["hard_checks"] if c.get("name") == "source_integrity")
-        local_baseline = json.loads((root / local_check["report_path"]).read_text(encoding="utf-8"))
+        local_baseline_path = (root / local_check["report_path"]).resolve()
+        if not local_baseline_path.is_relative_to(root.resolve()):
+            return ["baseline report escaped evidence root"]
+        local_baseline_bytes = local_baseline_path.read_bytes()
+        local_baseline = json.loads(local_baseline_bytes)
         expected_checks = REQUIRED_CHECKS - {"ci"}
         if not (
             observed_baseline.get("base_sha") == run.get("base_sha")
@@ -219,12 +268,82 @@ def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
             and observed_baseline.get("policy_source") == "base"
             and observed_baseline.get("workspace_clean") is True
             and all(observed_baseline.get("checks", {}).get(name) == "PASS" for name in expected_checks)
-            and observed_baseline.get("checks") == local_baseline.get("checks")
-            and observed_baseline.get("errors") == local_baseline.get("errors")
+            and observed_baseline == local_baseline
         ):
             return ["GitHub Actions baseline artifact conflicts with exact local report"]
+
+        gate = run.get("trusted_gate")
+        if not isinstance(gate, dict) or not all(type(gate.get(k)) is int and gate[k] > 0 for k in ("run_id", "run_attempt", "artifact_id")):
+            return ["candidate GitHub CI verified; trusted default-branch gate run is absent"]
+        gate_path = (root / str(gate["report_path"])).resolve()
+        if not gate_path.is_relative_to(root.resolve()):
+            return ["trusted gate report escaped evidence root"]
+        gate_bytes = gate_path.read_bytes()
+        if hashlib.sha256(gate_bytes).hexdigest() != gate.get("report_sha256"):
+            return ["trusted gate local report digest mismatch"]
+        trusted_report = json.loads(gate_bytes)
+
+        trusted_id = str(gate["run_id"])
+        trusted_run = _github_json(f"actions/runs/{trusted_id}")
+        trusted_jobs = _github_json(f"actions/runs/{trusted_id}/jobs").get("jobs", [])
+        trusted_artifacts = _github_json(f"actions/runs/{trusted_id}/artifacts").get("artifacts", [])
+        main_ref = _github_json("git/ref/heads/main")
+        if not (
+            trusted_run.get("id") == gate["run_id"]
+            and trusted_run.get("repository", {}).get("full_name") == run.get("repository")
+            and trusted_run.get("event") == "workflow_run"
+            and trusted_run.get("head_branch") == "main"
+            and trusted_run.get("head_sha") == run.get("policy_sha")
+            and trusted_run.get("run_attempt") == gate["run_attempt"]
+            and trusted_run.get("status") == "completed"
+            and trusted_run.get("conclusion") == "success"
+            and str(trusted_run.get("path", "")).split("@", 1)[0] == ".github/workflows/engineering-trusted-gate.yml"
+            and main_ref.get("object", {}).get("sha") == run.get("policy_sha")
+        ):
+            return ["trusted gate was not a successful exact-policy default-branch workflow run"]
+        gate_jobs = [
+            job for job in trusted_jobs
+            if job.get("name") == "trusted-gate"
+            and job.get("conclusion") == "success"
+            and {"Verify exact candidate evidence with default-branch policy", "Preserve trusted-gate evidence"}
+                <= {step.get("name") for step in job.get("steps", []) if step.get("conclusion") == "success"}
+        ]
+        if len(gate_jobs) != 1:
+            return ["trusted gate job did not execute and pass"]
+        trusted_artifact_name = f"engineering-trusted-gate-{run_id}"
+        selected_gate_artifacts = [
+            artifact for artifact in trusted_artifacts
+            if artifact.get("name") == trusted_artifact_name
+            and artifact.get("id") == gate["artifact_id"]
+            and artifact.get("expired") is False
+            and artifact.get("workflow_run", {}).get("id") == gate["run_id"]
+        ]
+        if len(selected_gate_artifacts) != 1:
+            return ["trusted gate artifact is missing or has wrong origin"]
+        downloaded_gate_bytes = _download_trusted(trusted_id, trusted_artifact_name)
+        if downloaded_gate_bytes != gate_bytes:
+            return ["trusted gate artifact differs from retained exact report"]
+        if not (
+            trusted_report.get("schema_version") == 1
+            and trusted_report.get("decision") == "PASS"
+            and trusted_report.get("github_api_verified") is True
+            and trusted_report.get("repository") == run.get("repository")
+            and trusted_report.get("pr_number") == matching_prs[0].get("number")
+            and trusted_report.get("base_sha") == run.get("base_sha")
+            and trusted_report.get("head_sha") == expected_sha
+            and trusted_report.get("policy_sha") == run.get("policy_sha")
+            and trusted_report.get("candidate_run_id") == int(run_id)
+            and trusted_report.get("candidate_run_attempt") == observed.get("run_attempt")
+            and trusted_report.get("candidate_check_run_id") == good_jobs[0]["id"]
+            and trusted_report.get("candidate_artifact_id") == candidate_artifact["id"]
+            and trusted_report.get("candidate_artifact_digest") == candidate_artifact["digest"]
+            and trusted_report.get("baseline_json_sha256") == hashlib.sha256(local_baseline_bytes).hexdigest()
+            and trusted_report.get("checks") == {name: "PASS" for name in expected_checks}
+            and trusted_report.get("errors") == []
+        ):
+            return ["trusted gate artifact does not bind exact candidate run, policy and hard checks"]
         return []
-    except (OSError, KeyError, ValueError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+    except (OSError, KeyError, ValueError, TypeError, AttributeError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return ["GitHub CI could not be verified through the Actions API"]
 
 

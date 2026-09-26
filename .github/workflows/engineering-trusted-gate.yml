@@ -1,0 +1,38 @@
+name: engineering-trusted-gate
+
+on:
+  workflow_run:
+    workflows: [engineering-candidate]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  checks: read
+  statuses: write
+
+jobs:
+  trusted-gate:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, resolved 2026-09-26
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify exact candidate evidence with default-branch policy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          POLICY_SHA: ${{ github.sha }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: python3 -I bootstrap/trusted_gate.py --event "$GITHUB_EVENT_PATH" --repo xbroute/hayool-os --policy-sha "$POLICY_SHA" --output "$RUNNER_TEMP/trusted-gate.json" --post-status
+      - name: Preserve trusted-gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4, resolved 2026-09-26
+        with:
+          name: engineering-trusted-gate-${{ github.event.workflow_run.id }}
+          path: ${{ runner.temp }}/trusted-gate.json
+          if-no-files-found: error
+          retention-days: 30
