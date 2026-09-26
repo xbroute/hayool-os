@@ -73,7 +73,7 @@ def security() -> list[str]:
     kill = json.loads((ROOT / "bootstrap/kill_switch.json").read_text(encoding="utf-8"))
     if kill != {"engaged": False, "autonomous_writes_enabled": False, "merge_enabled": False, "deploy_enabled": False, "external_calls_enabled": False}:
         errors.append("M0 shadow kill switch policy changed")
-    workflows = sorted((ROOT / ".github/workflows").glob("*.yml"))
+    workflows = sorted(p for p in (ROOT / ".github/workflows").iterdir() if p.suffix in {".yml", ".yaml"})
     if not workflows:
         return ["no CI workflow"]
     for workflow in workflows:
@@ -145,13 +145,15 @@ def test_integrity(base_sha: str, target_sha: str) -> list[str]:
     errors: list[str] = []
     for line in git("diff", "--name-status", base_sha, target_sha).splitlines():
         columns = line.split("\t")
-        status, path = columns[0], columns[-1]
-        protected = (
+        status = columns[0]
+        paths = columns[1:]
+        protected = any(
             path.startswith(("bootstrap/tests/", "tests/", ".github/workflows/"))
             or path == "bootstrap/baseline.py"
+            for path in paths
         )
         if protected and not status.startswith("A"):
-            errors.append("existing test or gate policy changed or removed: " + path)
+            errors.append("existing test or gate policy changed or removed: " + " -> ".join(paths))
     return errors
 
 

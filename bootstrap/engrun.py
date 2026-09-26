@@ -12,6 +12,7 @@ import json
 import re
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -149,6 +150,16 @@ def _github_json(path: str) -> dict:
     return value
 
 
+def _download_baseline(run_id: str, artifact_name: str) -> dict:
+    with tempfile.TemporaryDirectory(prefix="hayool-m0-artifact-") as directory:
+        subprocess.run(
+            ["gh", "run", "download", run_id, "--repo", "xbroute/hayool-os",
+             "--name", artifact_name, "--dir", directory],
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=30,
+        )
+        return json.loads((Path(directory) / "baseline.json").read_text(encoding="utf-8"))
+
+
 def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
     """Authenticate a claimed CI result against the repository's live Actions API."""
     check = next((c for c in run.get("hard_checks", []) if isinstance(c, dict) and c.get("name") == "ci"), None)
@@ -164,8 +175,16 @@ def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
         observed = _github_json(f"actions/runs/{run_id}")
         jobs = _github_json(f"actions/runs/{run_id}/jobs").get("jobs", [])
         artifacts = _github_json(f"actions/runs/{run_id}/artifacts").get("artifacts", [])
+        matching_prs = [
+            pr for pr in observed.get("pull_requests", [])
+            if pr.get("base", {}).get("sha") == run.get("base_sha")
+            and pr.get("head", {}).get("sha") == expected_sha
+            and pr.get("head", {}).get("ref") == run.get("branch")
+            and pr.get("base", {}).get("repo", {}).get("name") == "hayool-os"
+        ]
         if not (
-            observed.get("head_sha") == expected_sha
+            matching_prs
+            and observed.get("head_sha") == expected_sha
             and observed.get("event") == "pull_request"
             and observed.get("status") == "completed"
             and observed.get("conclusion") == "success"
@@ -179,15 +198,31 @@ def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
             and job.get("conclusion") == "success"
             and job.get("steps")
             and all(step.get("conclusion") == "success" for step in job["steps"])
+            and {"Load policy from PR base", "Run deterministic M0 checks on PR head", "Preserve check evidence"}
+                <= {step.get("name") for step in job["steps"] if step.get("conclusion") == "success"}
         ]
         if not good_jobs:
             return ["GitHub Actions baseline job did not execute successfully"]
+        artifact_name = f"engineering-baseline-{expected_sha}"
         if not any(
-            artifact.get("name") == f"engineering-baseline-{expected_sha}"
-            and artifact.get("expired") is False
+            artifact.get("name") == artifact_name and artifact.get("expired") is False
             for artifact in artifacts
         ):
             return ["GitHub Actions exact-SHA baseline artifact missing"]
+        observed_baseline = _download_baseline(run_id, artifact_name)
+        local_check = next(c for c in run["hard_checks"] if c.get("name") == "source_integrity")
+        local_baseline = json.loads((root / local_check["report_path"]).read_text(encoding="utf-8"))
+        expected_checks = REQUIRED_CHECKS - {"ci"}
+        if not (
+            observed_baseline.get("base_sha") == run.get("base_sha")
+            and observed_baseline.get("target_sha") == expected_sha
+            and observed_baseline.get("policy_source") == "base"
+            and observed_baseline.get("workspace_clean") is True
+            and all(observed_baseline.get("checks", {}).get(name) == "PASS" for name in expected_checks)
+            and observed_baseline.get("checks") == local_baseline.get("checks")
+            and observed_baseline.get("errors") == local_baseline.get("errors")
+        ):
+            return ["GitHub Actions baseline artifact conflicts with exact local report"]
         return []
     except (OSError, KeyError, ValueError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return ["GitHub CI could not be verified through the Actions API"]

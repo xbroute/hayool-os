@@ -15,9 +15,9 @@ This is an observation of `https://github.com/xbroute/hayool-os` before M0.0 imp
 | Merge settings | Auto-merge disabled. Delete-branch-on-merge disabled. No independent human reviewer identity was observed. |
 | Local checkout | Isolated checkout under `hayool-os-workspace`, branch `codex/m0-bootstrap`, created from the exact initial SHA. The ChatGPT project mirror is not the destination repository. |
 
-## Manual blocker
+## Visibility and protection change
 
-The private repository's current GitHub plan blocks branch-protection and ruleset APIs despite admin access. Do not make it public as a workaround. The owner must enable a plan with private-repository protection (or supply an equivalent enforceable policy) and configure PR required, direct/force push denied, required named CI checks, non-self M0 approval and bypass restrictions. Until observed, these controls remain **not configured** and M0.0 cannot pass its protected-repository criterion. All changes remain on isolated branches and PRs; no direct push to `main`.
+At the initial private-repository audit, branch-protection and ruleset APIs returned plan-level HTTP 403. The owner subsequently made this repository public. A fresh API read returned `visibility=public` and `main.protected=true`. The protection API now shows required pull request with one approval, stale review dismissal and last-push approval, strict `engineering-baseline` check tied to GitHub Actions app ID 15368, admin enforcement, no force push and no deletion. These controls are configured; they do not ensure an independent person clicks merge after approval. All changes remain on isolated branches and PRs; no direct push to `main`.
 
 The above is a scoped GitHub and checkout audit, not proof that no external infrastructure, credentials or environments exist elsewhere.
 
@@ -29,4 +29,4 @@ After the initial audit, the repository Actions permission API accepted `sha_pin
 
 [Bootstrap PR #1](https://github.com/xbroute/hayool-os/pull/1) and [Shadow PR #2](https://github.com/xbroute/hayool-os/pull/2) each produced a failed `engineering-baseline` check. The job annotation says: "The job was not started because recent account payments have failed or your spending limit needs to be increased." No workflow step or artifact ran. This is a GitHub billing/manual blocker, not a test failure or a passing CI run. Fix account billing and rerun the exact current PR heads before treating CI as verified.
 
-Independent read-only reviewers examined bootstrap `0ba42abaabf8fb010d9f66b4292dd44941cc4690` and Shadow `4cafb7bd23aa421f8440145f7bc0a564d6b59d96`. Their P1/P2 findings led to bounded M0.0 gate repairs. The current PR heads must be reviewed again after those changes. The GitHub plan and billing issues remain external blockers.
+Independent read-only reviewers examined bootstrap `0ba42abaabf8fb010d9f66b4292dd44941cc4690` and Shadow `4cafb7bd23aa421f8440145f7bc0a564d6b59d96`. Their P1/P2 findings led to bounded M0.0 gate repairs. The current PR heads must be reviewed again after those changes. The earlier GitHub plan blocker was resolved by the owner's public-visibility change and verified `main` protection. Earlier exact-head jobs still failed before steps because of billing; final-head CI must be observed separately.

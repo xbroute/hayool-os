@@ -92,12 +92,19 @@ class EngineeringRunGateTests(unittest.TestCase):
 
     def test_live_ci_verification_accepts_exact_executed_run(self):
         responses = {
-            "actions/runs/1": {"head_sha": self.target, "event": "pull_request", "status": "completed", "conclusion": "success", "path": ".github/workflows/engineering-baseline.yml"},
-            "actions/runs/1/jobs": {"jobs": [{"name": "engineering-baseline", "head_sha": self.target, "conclusion": "success", "steps": [{"conclusion": "success"}]}]},
+            "actions/runs/1": {"head_sha": self.target, "event": "pull_request", "status": "completed", "conclusion": "success", "path": ".github/workflows/engineering-baseline.yml", "pull_requests": [{"base": {"sha": self.base, "repo": {"name": "hayool-os"}}, "head": {"sha": self.target, "ref": "codex/shadow-test"}}]},
+            "actions/runs/1/jobs": {"jobs": [{"name": "engineering-baseline", "head_sha": self.target, "conclusion": "success", "steps": [{"name": name, "conclusion": "success"} for name in ("Load policy from PR base", "Run deterministic M0 checks on PR head", "Preserve check evidence")]}]},
             "actions/runs/1/artifacts": {"artifacts": [{"name": "engineering-baseline-" + self.target, "expired": False}]},
         }
-        with patch("bootstrap.engrun._github_json", side_effect=lambda path: responses[path]):
+        artifact = json.loads((self.root / "baseline.json").read_text())
+        artifact["policy_source"] = "base"
+        with patch("bootstrap.engrun._github_json", side_effect=lambda path: responses[path]), patch("bootstrap.engrun._download_baseline", return_value=artifact):
             self.assertEqual(verify_github_ci(self.run, self.root, self.target), [])
+            responses["actions/runs/1"]["pull_requests"][0]["base"]["sha"] = "c" * 40
+            self.assertTrue(verify_github_ci(self.run, self.root, self.target))
+            responses["actions/runs/1"]["pull_requests"][0]["base"]["sha"] = self.base
+            artifact["checks"]["secrets"] = "FAIL"
+            self.assertTrue(verify_github_ci(self.run, self.root, self.target))
 
     def test_changed_path_claim_must_equal_git_diff(self):
         with patch("bootstrap.engrun.subprocess.check_output", return_value="docs/adr/ADR_CATALOG.md\n"):
