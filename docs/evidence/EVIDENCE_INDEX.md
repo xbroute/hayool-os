@@ -1,3 +1,16 @@
+# Engineering evidence addendum — 2026-09-26 UTC
+
+The imported V7.2 original is preserved at `archive/V7.2/Hayool-OS-V7.2-Final-Source-of-Truth.zip` (SHA-256 `35054ad417242eda797d81816d81ae10a2bcc44b4a10fcc8784005c7d1d5d700`). The pre-code wording below is historical and is superseded where the repository audit and implementation status differ.
+
+| ID | Observed claim | Evidence and limit |
+|---|---|---|
+| EVID-IMP-001 | V7.2 import integrity PASS | Import commit `7f8ecbd986ccb399d736bbb0f55a1345067de911` verified by reading its Git tree: original ZIP CRC, 153 safe paths, 152 file hashes in PACKAGE_MANIFEST, 61 source hashes, V7.1 predecessor hash and design digest passed before import; 152 files, 61 sources and predecessor passed again in checkout. This is import integrity, not product validation. |
+| EVID-REPO-001 | Repository baseline observed | Private `xbroute/hayool-os`, initial `main` SHA `138bdb78530403bac8407738c05fe033514a7838`, one README, GitHub settings and HTTP 403 protection blocker detailed in `docs/engineering/REPOSITORY_REALITY_2026-09-26.md`. |
+| EVID-ENG-001 | M0.0 | **PENDING** until real Shadow PR, exact-SHA check/review evidence and enforceable main protection. |
+| EVID-ENG-002 | M0.2 | **PENDING**; do not run or label PASS before M0.0 PASS. |
+
+---
+
 # Evidence and claims registry
 
 Current state: V7.2 design-only, 2026-09-26. **M0.1 DOCUMENTATION GATE = PASS**, solely for pre-code Source of Truth consistency; **M0.0 = PENDING; M0.2 = PENDING**. `EVID-DOC-001` verifies original source bytes, not product validation. The V7.1 `EVID-DOC-002` review is historical and invalidated for V7.2 by material edits; its record is retained in `archive/V7.1/`. `EVID-DOC-003` records two independent read-only reviews on a shared digest and final package integrity in `DOCUMENT_REVIEW.md`. It cannot pass implementation, security assessment, legal applicability, market readiness or M0.2. No Git SHA, executable build, test output, qualified country opinion, live provider agreement, real design-partner outcome or commercial validation exists.
@@ -7,8 +20,8 @@ Current state: V7.2 design-only, 2026-09-26. **M0.1 DOCUMENTATION GATE = PASS**,
 | EVID-DOC-001 | Original V6/V7 completeness | `SOURCE_MANIFEST.json` 61 paths and preserved `archive/sources/`; source coverage and byte hashes | PASS documentation source-byte integrity |
 | EVID-DOC-002 | V7.1 M0.1 internal consistency | Historical scoped digest and reviews in predecessor archive | Superseded for current V7.2 design |
 | EVID-DOC-003 | V7.2 M0.1 closure | 194 REQs, 31 ADR records, 138-ID audit, 25-dimension audit, two read-only reviews, `DOCUMENT_REVIEW.md`, final digest and ZIP manifest | **M0.1 DOCUMENTATION GATE = PASS**; pre-code document only |
-| EVID-ENG-001 | M0.0 shadow Autopilot and protection | Exact repo SHA, ENG-RUN and seeded blocker traces | Planned; no repo |
-| EVID-ENG-002 | M0.2 independent architecture | Exact SHA, signatures/findings/closure | Planned; no repo |
+| EVID-ENG-001 | M0.0 shadow Autopilot and protection | Bootstrap branch under construction; real PR CI, ENG-RUN and independent review pending; main protection unavailable on current plan | PENDING; no milestone PASS |
+| EVID-ENG-002 | M0.2 independent architecture | Required only after real M0.0 PASS on exact repository SHA | PENDING; not run |
 | EVID-PROD-001 | Internal golden journey | Real approved business trace, ledger, multi-tenant/security, UX/AI-off and recovery | Planned V1.0 |
 | EVID-PROD-002 | Design partner independence | Consent/agreement, measurements, support, upgrade/export | Planned V1.1 |
 | EVID-POL-001 | IR live sourcing | Qualified applicable policy, approved pack, tests, provider/worker facts | Planned V1.2 |

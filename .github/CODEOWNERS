@@ -1,0 +1,7 @@
+# Ownership routing only. It is not enforceable until GitHub protection is available.
+* @xbroute
+/.github/ @xbroute
+/bootstrap/ @xbroute
+/docs/adr/ @xbroute
+/docs/requirements/ @xbroute
+/docs/engineering/ @xbroute

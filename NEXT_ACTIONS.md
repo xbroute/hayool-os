@@ -1,3 +1,19 @@
+# Engineering Bootstrap next actions — 2026-09-26 UTC
+
+The earlier queue below is historical V7.2 pre-code guidance. The owner has now authorized only M0.0, then M0.2 after a real M0.0 PASS. No V1.0 feature work is authorized.
+
+| Order | Action | Exit condition |
+|---|---|---|
+| 1 | Finish M0.0 bootstrap branch and open PR from the verified V7.2 import. | Exact head SHA, green deterministic CI artifact, independent read-only review, and traceable source/runtime records. |
+| 2 | Run a separate harmless Shadow PR and a seeded hard failure. | ENG-RUN bound to exact SHA, two independent read-only reviews, bounded repair if needed, observed PASS/FAIL; no merge/deploy. |
+| 3 | Resolve the GitHub private-repository protection blocker. | GitHub plan or equivalent enforceable policy supports PR requirement, direct/force push denial, required named CI, non-self M0 approval and bypass control; verify through API and a real PR. Do not publicize the repository as a workaround. |
+| 4 | After M0.0 is genuinely PASS and its bootstrap is merged by an independent authorized reviewer, run M0.2 on the final exact SHA. | All required architecture domains independently reviewed; P0/P1 closed; hard checks green; immutable evidence indexed. |
+| 5 | Stop before V1.0 implementation and deliver the Engineering Bootstrap report. | M0.0 and M0.2 evidence-backed results with explicit remaining manual controls and V1.0 entry plan. |
+
+Current manual blocker: `main` is unprotected because branch-protection and rulesets endpoints return HTTP 403 for this private repository on its current plan. M0.0 and M0.2 stay PENDING until actual proof meets their gates. Candidate versions and licenses are listed in `docs/engineering/DEPENDENCY_VALIDATION.md`; no product dependency is installed. No REQ or ADR change is made here.
+
+---
+
 # NEXT_ACTIONS — priority queue
 
 Updated 2026-09-26. **M0.1 DOCUMENTATION GATE = PASS** for pre-code Source of Truth only, supported by EVID-DOC-003 and final package integrity; it grants no implementation, security, legal or market readiness. **M0.0 = PENDING; M0.2 = PENDING**. Actions 1–2 close the current documentation phase; no product action is authorized by this request.

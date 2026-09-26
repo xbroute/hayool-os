@@ -1,3 +1,22 @@
+# Engineering Bootstrap repository reality — 2026-09-26 UTC
+
+This section supersedes the historical pre-code status below. The original V7.2 package is preserved byte-for-byte at `archive/V7.2/Hayool-OS-V7.2-Final-Source-of-Truth.zip` (SHA-256 `35054ad417242eda797d81816d81ae10a2bcc44b4a10fcc8784005c7d1d5d700`). Import integrity passed before and after extraction: 153 ZIP entries, 152 package-manifest files, 61 raw sources, V7.1 predecessor and design review digest. The supplied requirements, accepted ADRs and owner decisions have not been edited.
+
+| Dimension | Current observed status |
+|---|---|
+| Repository | Private `xbroute/hayool-os`, default `main`, initial SHA `138bdb78530403bac8407738c05fe033514a7838`; only `README.md` at that SHA. See `docs/engineering/REPOSITORY_REALITY_2026-09-26.md`. |
+| Source of Truth | V7.2 exact import commit `7f8ecbd986ccb399d736bbb0f55a1345067de911` on isolated `codex/m0-bootstrap` branch; not yet merged into default branch. The original ZIP is retained as immutable provenance. |
+| Specified | V7.2 design baseline, 194 REQs and 31 ADR records, remains authoritative for bootstrap scope. |
+| Implemented | M0.0 gate code and CI workflow are under review on the bootstrap branch. No V1.0 product capability is implemented. |
+| Tested | Local ENG-RUN unit suite includes a hard-failure injection; exact-SHA PR CI and independent review remain pending until a real run is recorded. |
+| Configured | GitHub Actions enabled, default token read-only, zero workflows/secrets/environments at audit. `main` unprotected; branch-protection and rulesets APIs returned plan-level HTTP 403. |
+| Verified | Package import hashes verified. No product security, staging, restore, upgrade, jurisdiction, market or production verification. |
+| Production-ready | No. No product deployment target or credentials observed. |
+
+**M0.1 documentation gate remains PASS for its original scope. M0.0 = PENDING; M0.2 = PENDING.** Main protection and non-self M0 merge are manual blockers under the current private-repository plan. Do not promote an unmerged branch or a green advisory check to a protected-main or milestone PASS. Shadow Mode only; autonomous write, merge, deployment and external calls disabled. Runtime candidate pins are planned, not installed or compatibility-tested. No requirement, ADR or owner-decision delta is introduced by this engineering record.
+
+---
+
 # PROJECT_STATE — Hayool OS
 
 Updated 2026-09-26 UTC. Current phase: V7.2 pre-code Source of Truth final; **M0.1 DOCUMENTATION GATE = PASS**. This PASS establishes only documentation/source-trace consistency, not implementation, security assessment, legal applicability or market readiness. No product code written; owner explicitly forbids phase two. V6 and V7 original sources: 61 files inventoried/read with raw originals under `archive/sources/`; complete V7.1 predecessor ZIP retained. Current design authority is V7.2 with explicit conflict ledger. The Master Prompt remains the implementation mission for later authorized phases, not permission to code now.
