@@ -20,6 +20,6 @@ The secret patterns are a baseline, not comprehensive detection. Archived proven
 
 For a real shadow PR: record the base/head SHA and changed paths; run CI; retrieve its JSON artifact; have two read-only reviewers inspect that exact SHA and artifact; save their signed or attributable reports; evaluate the ENG-RUN record against those files; retain the run JSON, report hashes, CI URL, review identity/model disclosure and failure-injection output. New commits invalidate affected checks and reviews. The gateway, requested and effective provider/model, and whether the effective identity was verified are recorded. Hidden identity is recorded as unavailable and blocks a PASS rather than being guessed.
 
-`python3 bootstrap/engrun.py RUN.json --root EVIDENCE_DIR --sha EXACT_HEAD_SHA` returns a nonzero exit code on any failure. The JSON schema is descriptive; the stdlib evaluator is the executed gate. All evidence is scoped to the exact SHA rather than to a mutable branch name.
+`python3 bootstrap/engrun.py RUN.json --root EVIDENCE_DIR --sha EXACT_HEAD_SHA` returns a nonzero exit code on any failure. The JSON schema is descriptive; the stdlib evaluator is the executed gate. The CLI also requires a clean Git checkout whose branch and HEAD equal the record. All evidence is scoped to the exact SHA rather than to a mutable branch name.
 
 Current GitHub Actions runs on PR #1 and PR #2 did not start due an account payment/spending-limit annotation. ENG-RUN requires a successful real CI proof; local PASS cannot replace it.

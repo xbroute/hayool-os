@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -148,6 +149,14 @@ def main() -> int:
         parser.error("--sha must be a 40-character lowercase commit SHA")
     run = json.loads(args.run_file.read_text(encoding="utf-8"))
     errors = evaluate(run, args.root, args.sha)
+    try:
+        head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+        branch = subprocess.check_output(["git", "branch", "--show-current"], text=True).strip()
+        dirty = subprocess.check_output(["git", "status", "--porcelain"], text=True).strip()
+        if head != args.sha or branch != run.get("branch") or dirty:
+            errors.append("CLI checkout is dirty, wrong branch, or not the target SHA")
+    except subprocess.CalledProcessError:
+        errors.append("CLI must run in a Git checkout")
     print(json.dumps({"run_id": run.get("run_id"), "target_sha": args.sha, "decision": "FAIL" if errors else "PASS", "errors": errors}, sort_keys=True))
     return 1 if errors else 0
 
