@@ -16,11 +16,23 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Load policy from PR base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git cat-file -e "$BASE_SHA:bootstrap/baseline.py"; then
+            git show "$BASE_SHA:bootstrap/baseline.py" > "$RUNNER_TEMP/trusted-baseline.py"
+            echo "HAYOOL_POLICY_SOURCE=base" >> "$GITHUB_ENV"
+          else
+            cp bootstrap/baseline.py "$RUNNER_TEMP/trusted-baseline.py"
+            echo "HAYOOL_POLICY_SOURCE=bootstrap-exception" >> "$GITHUB_ENV"
+          fi
       - name: Run deterministic M0 checks on PR head
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           TARGET_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 bootstrap/baseline.py --base-sha "$BASE_SHA" --target-sha "$TARGET_SHA" --output "$RUNNER_TEMP/baseline.json"
+          HAYOOL_CANDIDATE_ROOT: ${{ github.workspace }}
+        run: python3 "$RUNNER_TEMP/trusted-baseline.py" --base-sha "$BASE_SHA" --target-sha "$TARGET_SHA" --output "$RUNNER_TEMP/baseline.json"
       - name: Preserve check evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4, resolved 2026-09-26

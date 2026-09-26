@@ -4,9 +4,10 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from bootstrap.engrun import REQUIRED_CHECKS, evaluate, risk_for_path
+from bootstrap.engrun import REQUIRED_CHECKS, evaluate, risk_for_path, verify_changed_paths, verify_github_ci
 
 
 class EngineeringRunGateTests(unittest.TestCase):
@@ -62,7 +63,7 @@ class EngineeringRunGateTests(unittest.TestCase):
     def _hash(self, name):
         return hashlib.sha256((self.root / name).read_bytes()).hexdigest()
 
-    def test_valid_shadow_trace_passes(self):
+    def test_structural_shadow_trace_passes_without_live_ci(self):
         self.assertEqual(evaluate(self.run, self.root, self.target), [])
 
     def test_failure_injection_ai_votes_cannot_override_hard_failure(self):
@@ -83,6 +84,24 @@ class EngineeringRunGateTests(unittest.TestCase):
             check["report_sha256"] = self._hash("baseline.json")
         errors = evaluate(self.run, self.root, self.target)
         self.assertTrue(any("GitHub CI proof" in error for error in errors), errors)
+
+    def test_live_ci_verification_rejects_failed_run(self):
+        with patch("bootstrap.engrun._github_json") as query:
+            query.return_value = {"head_sha": self.target, "event": "pull_request", "status": "completed", "conclusion": "failure", "path": ".github/workflows/engineering-baseline.yml"}
+            self.assertTrue(verify_github_ci(self.run, self.root, self.target))
+
+    def test_live_ci_verification_accepts_exact_executed_run(self):
+        responses = {
+            "actions/runs/1": {"head_sha": self.target, "event": "pull_request", "status": "completed", "conclusion": "success", "path": ".github/workflows/engineering-baseline.yml"},
+            "actions/runs/1/jobs": {"jobs": [{"name": "engineering-baseline", "head_sha": self.target, "conclusion": "success", "steps": [{"conclusion": "success"}]}]},
+            "actions/runs/1/artifacts": {"artifacts": [{"name": "engineering-baseline-" + self.target, "expired": False}]},
+        }
+        with patch("bootstrap.engrun._github_json", side_effect=lambda path: responses[path]):
+            self.assertEqual(verify_github_ci(self.run, self.root, self.target), [])
+
+    def test_changed_path_claim_must_equal_git_diff(self):
+        with patch("bootstrap.engrun.subprocess.check_output", return_value="docs/adr/ADR_CATALOG.md\n"):
+            self.assertTrue(verify_changed_paths(self.run, self.target))
 
     def test_stale_sha_blocks(self):
         self.assertTrue(any("stale" in e for e in evaluate(self.run, self.root, "c" * 40)))

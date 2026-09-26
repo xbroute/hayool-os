@@ -6,7 +6,7 @@ The imported V7.2 original is preserved at `archive/V7.2/Hayool-OS-V7.2-Final-So
 |---|---|---|
 | EVID-IMP-001 | V7.2 import integrity PASS | Import commit `7f8ecbd986ccb399d736bbb0f55a1345067de911` verified by reading its Git tree: original ZIP CRC, 153 safe paths, 152 file hashes in PACKAGE_MANIFEST, 61 source hashes, V7.1 predecessor hash and design digest passed before import; 152 files, 61 sources and predecessor passed again in checkout. This is import integrity, not product validation. |
 | EVID-REPO-001 | Repository baseline observed | Private `xbroute/hayool-os`, initial `main` SHA `138bdb78530403bac8407738c05fe033514a7838`, one README, GitHub settings and HTTP 403 protection blocker detailed in `docs/engineering/REPOSITORY_REALITY_2026-09-26.md`. |
-| EVID-ENG-001 | M0.0 | **PENDING**: draft [bootstrap PR #1](https://github.com/xbroute/hayool-os/pull/1) and [Shadow PR #2](https://github.com/xbroute/hayool-os/pull/2) exist. Local exact-SHA checks passed, but both GitHub Actions jobs failed before steps due account payment/spending limit; independent review and enforceable main protection remain missing. |
+| EVID-ENG-001 | M0.0 | **PENDING**: draft [bootstrap PR #1](https://github.com/xbroute/hayool-os/pull/1) and [Shadow PR #2](https://github.com/xbroute/hayool-os/pull/2) exist. Local exact-SHA checks passed, but both GitHub Actions jobs failed before steps due account payment/spending limit; two independent read-only reviews of earlier exact SHAs found P1/P2 gate weaknesses; bounded repair is present but final-head re-review and enforceable main protection are missing. The failure injection on the earlier Shadow head rejected a forged PASS with two explicitly synthetic PASS votes; see [Shadow PR evidence comment](https://github.com/xbroute/hayool-os/pull/2#issuecomment-5849273815). This is observed FAIL, not a Shadow PASS. |
 | EVID-ENG-002 | M0.2 | **PENDING**; do not run or label PASS before M0.0 PASS. |
 
 ---
@@ -20,7 +20,7 @@ Current state: V7.2 design-only, 2026-09-26. **M0.1 DOCUMENTATION GATE = PASS**,
 | EVID-DOC-001 | Original V6/V7 completeness | `SOURCE_MANIFEST.json` 61 paths and preserved `archive/sources/`; source coverage and byte hashes | PASS documentation source-byte integrity |
 | EVID-DOC-002 | V7.1 M0.1 internal consistency | Historical scoped digest and reviews in predecessor archive | Superseded for current V7.2 design |
 | EVID-DOC-003 | V7.2 M0.1 closure | 194 REQs, 31 ADR records, 138-ID audit, 25-dimension audit, two read-only reviews, `DOCUMENT_REVIEW.md`, final digest and ZIP manifest | **M0.1 DOCUMENTATION GATE = PASS**; pre-code document only |
-| EVID-ENG-001 | M0.0 shadow Autopilot and protection | Bootstrap branch under construction; real PR CI, ENG-RUN and independent review pending; main protection unavailable on current plan | PENDING; no milestone PASS |
+| EVID-ENG-001 | M0.0 shadow Autopilot and protection | Bootstrap code and two independent earlier-SHA reviews exist; real CI and final-SHA reviewer proof are pending; main protection unavailable on current plan | PENDING; no milestone PASS |
 | EVID-ENG-002 | M0.2 independent architecture | Required only after real M0.0 PASS on exact repository SHA | PENDING; not run |
 | EVID-PROD-001 | Internal golden journey | Real approved business trace, ledger, multi-tenant/security, UX/AI-off and recovery | Planned V1.0 |
 | EVID-PROD-002 | Design partner independence | Consent/agreement, measurements, support, upgrade/export | Planned V1.1 |

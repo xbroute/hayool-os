@@ -1,7 +1,7 @@
 """Small, fail-closed evaluator for a shadow Engineering Run.
 
-No network calls, provider calls, repository writes, or merge/deploy authority.
-The caller supplies evidence files produced for one immutable commit SHA.
+The CLI reads GitHub CI state and Git history; it never writes the repository,
+calls a model, merges, or deploys. Pure evaluate() checks evidence structure.
 """
 
 from __future__ import annotations
@@ -139,6 +139,72 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
     return errors
 
 
+def _github_json(path: str) -> dict:
+    raw = subprocess.check_output(
+        ["gh", "api", f"repos/xbroute/hayool-os/{path}"], text=True, timeout=30
+    )
+    value = json.loads(raw)
+    if not isinstance(value, dict):
+        raise ValueError("GitHub response is not an object")
+    return value
+
+
+def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
+    """Authenticate a claimed CI result against the repository's live Actions API."""
+    check = next((c for c in run.get("hard_checks", []) if isinstance(c, dict) and c.get("name") == "ci"), None)
+    if not check:
+        return ["GitHub CI check is absent"]
+    try:
+        report = json.loads((root / str(check["report_path"])).read_text(encoding="utf-8"))
+        url = str(report.get("url", ""))
+        match = re.fullmatch(r"https://github\.com/xbroute/hayool-os/actions/runs/([0-9]+)", url)
+        if not match:
+            return ["GitHub CI run URL is invalid"]
+        run_id = match.group(1)
+        observed = _github_json(f"actions/runs/{run_id}")
+        jobs = _github_json(f"actions/runs/{run_id}/jobs").get("jobs", [])
+        artifacts = _github_json(f"actions/runs/{run_id}/artifacts").get("artifacts", [])
+        if not (
+            observed.get("head_sha") == expected_sha
+            and observed.get("event") == "pull_request"
+            and observed.get("status") == "completed"
+            and observed.get("conclusion") == "success"
+            and str(observed.get("path", "")).split("@", 1)[0].endswith(".github/workflows/engineering-baseline.yml")
+        ):
+            return ["GitHub Actions run is not successful for exact SHA and baseline workflow"]
+        good_jobs = [
+            job for job in jobs
+            if job.get("name") == "engineering-baseline"
+            and job.get("head_sha", expected_sha) == expected_sha
+            and job.get("conclusion") == "success"
+            and job.get("steps")
+            and all(step.get("conclusion") == "success" for step in job["steps"])
+        ]
+        if not good_jobs:
+            return ["GitHub Actions baseline job did not execute successfully"]
+        if not any(
+            artifact.get("name") == f"engineering-baseline-{expected_sha}"
+            and artifact.get("expired") is False
+            for artifact in artifacts
+        ):
+            return ["GitHub Actions exact-SHA baseline artifact missing"]
+        return []
+    except (OSError, KeyError, ValueError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return ["GitHub CI could not be verified through the Actions API"]
+
+
+def verify_changed_paths(run: dict, expected_sha: str) -> list[str]:
+    try:
+        actual = subprocess.check_output(
+            ["git", "diff", "--name-only", run["base_sha"], expected_sha], text=True
+        ).splitlines()
+        if sorted(set(actual)) != sorted(run.get("changed_paths", [])):
+            return ["changed_paths differs from exact base-to-head Git diff"]
+        return []
+    except (KeyError, OSError, subprocess.CalledProcessError):
+        return ["exact base-to-head Git diff unavailable"]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("run_file", type=Path)
@@ -149,6 +215,8 @@ def main() -> int:
         parser.error("--sha must be a 40-character lowercase commit SHA")
     run = json.loads(args.run_file.read_text(encoding="utf-8"))
     errors = evaluate(run, args.root, args.sha)
+    errors.extend(verify_changed_paths(run, args.sha))
+    errors.extend(verify_github_ci(run, args.root, args.sha))
     try:
         head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
         branch = subprocess.check_output(["git", "branch", "--show-current"], text=True).strip()

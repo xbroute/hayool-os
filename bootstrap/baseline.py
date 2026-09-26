@@ -13,7 +13,7 @@ import unittest
 import zipfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(os.environ.get("HAYOOL_CANDIDATE_ROOT") or Path(__file__).resolve().parents[1]).resolve()
 ORIGINAL_ZIP = ROOT / "archive/V7.2/Hayool-OS-V7.2-Final-Source-of-Truth.zip"
 ORIGINAL_ZIP_SHA256 = "35054ad417242eda797d81816d81ae10a2bcc44b4a10fcc8784005c7d1d5d700"
 PREFIX = "hayool-os-v7.2-final/"
@@ -78,9 +78,11 @@ def security() -> list[str]:
         return ["no CI workflow"]
     for workflow in workflows:
         text = workflow.read_text(encoding="utf-8")
-        for forbidden in ("pull_request_target", "workflow_run:", "write-all", "id-token: write", "secrets."):
+        for forbidden in ("pull_request_target", "workflow_run:", "write-all", "secrets."):
             if forbidden in text:
                 errors.append(f"unsafe workflow token in {workflow.name}: {forbidden}")
+        if re.search(r"(?im)\b[A-Za-z_-]+:\s*write\b|permissions:\s*write-all\b", text):
+            errors.append(f"workflow {workflow.name} requests write permission")
         for action in re.findall(r"^\s*-?\s*uses:\s*([^\s#]+)", text, re.MULTILINE):
             if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}", action):
                 errors.append(f"unpinned action in {workflow.name}")
@@ -120,11 +122,17 @@ def licenses() -> list[str]:
 
 def secrets() -> list[str]:
     errors: list[str] = []
-    for relative in git("ls-files").splitlines():
-        if relative.startswith("archive/"):
-            continue  # Immutable provenance is reviewed separately; never feed it to a model.
+    tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT).split(b"\0")
+    for raw in tracked:
+        if not raw:
+            continue
+        relative = os.fsdecode(raw)
         path = ROOT / relative
-        if not path.is_file() or path.stat().st_size > 2_000_000:
+        if path.is_symlink():
+            errors.append(f"tracked symlink requires review: {relative}")
+            continue
+        if not path.is_file():
+            errors.append(f"tracked file missing: {relative}")
             continue
         data = path.read_bytes()
         for label, pattern in SECRET_PATTERNS.items():
@@ -138,8 +146,12 @@ def test_integrity(base_sha: str, target_sha: str) -> list[str]:
     for line in git("diff", "--name-status", base_sha, target_sha).splitlines():
         columns = line.split("\t")
         status, path = columns[0], columns[-1]
-        if (path.startswith("bootstrap/tests/") or path.startswith("tests/")) and not status.startswith("A"):
-            errors.append("existing test changed or removed: " + path)
+        protected = (
+            path.startswith(("bootstrap/tests/", "tests/", ".github/workflows/"))
+            or path == "bootstrap/baseline.py"
+        )
+        if protected and not status.startswith("A"):
+            errors.append("existing test or gate policy changed or removed: " + path)
     return errors
 
 
@@ -190,7 +202,7 @@ def main() -> int:
     }
     details = {name: function() for name, function in functions.items()}
     checks = {name: "PASS" if not errors else "FAIL" for name, errors in details.items()}
-    report = {"schema_version": 1, "base_sha": args.base_sha, "target_sha": target_sha, "workspace_clean": clean, "checks": checks, "errors": details}
+    report = {"schema_version": 1, "policy_source": os.environ.get("HAYOOL_POLICY_SOURCE", "local-unverified"), "base_sha": args.base_sha, "target_sha": target_sha, "workspace_clean": clean, "checks": checks, "errors": details}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({"target_sha": target_sha, "workspace_clean": clean, "checks": checks}, sort_keys=True))

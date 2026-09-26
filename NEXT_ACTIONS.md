@@ -4,13 +4,13 @@ The earlier queue below is historical V7.2 pre-code guidance. The owner has now 
 
 | Order | Action | Exit condition |
 |---|---|---|
-| 1 | Finish M0.0 bootstrap branch and open PR from the verified V7.2 import. | Exact head SHA, green deterministic CI artifact, independent read-only review, and traceable source/runtime records. |
+| 1 | Finish M0.0 bootstrap branch and open PR from the verified V7.2 import. | Exact head SHA, green deterministic CI artifact, independent read-only re-review on the final exact SHA, and traceable source/runtime records. |
 | 2 | Run a separate harmless Shadow PR and a seeded hard failure. | ENG-RUN bound to exact SHA, two independent read-only reviews, bounded repair if needed, observed PASS/FAIL; no merge/deploy. |
 | 3 | Resolve the GitHub private-repository protection blocker. | GitHub plan or equivalent enforceable policy supports PR requirement, direct/force push denial, required named CI, non-self M0 approval and bypass control; verify through API and a real PR. Do not publicize the repository as a workaround. |
 | 4 | After M0.0 is genuinely PASS and its bootstrap is merged by an independent authorized reviewer, run M0.2 on the final exact SHA. | All required architecture domains independently reviewed; P0/P1 closed; hard checks green; immutable evidence indexed. |
 | 5 | Stop before V1.0 implementation and deliver the Engineering Bootstrap report. | M0.0 and M0.2 evidence-backed results with explicit remaining manual controls and V1.0 entry plan. |
 
-Current manual blockers: GitHub Actions jobs on PR #1 and #2 were not started because GitHub reported account payment/spending-limit trouble; no CI evidence can pass until billing is fixed. `main` is unprotected because branch-protection and rulesets endpoints return HTTP 403 for this private repository on its current plan. M0.0 and M0.2 stay PENDING until actual proof meets their gates. Candidate versions and licenses are listed in `docs/engineering/DEPENDENCY_VALIDATION.md`; no product dependency is installed. No REQ or ADR change is made here.
+Current manual blockers: GitHub Actions jobs on PR #1 and #2 were not started because GitHub reported account payment/spending-limit trouble; no CI evidence can pass until billing is fixed. `main` is unprotected because branch-protection and rulesets endpoints return HTTP 403 for this private repository on its current plan. M0.0 and M0.2 stay PENDING until actual proof meets their gates. The independent reviewers found that CI policy provenance, live CI authentication, Git-diff risk binding, and secret scanning needed repair; code for those checks was added, but the current exact head still needs new review and executed CI. Reviewer/provider identity attestations and non-self merge remain manual. Candidate versions and licenses are listed in `docs/engineering/DEPENDENCY_VALIDATION.md`; no product dependency is installed. No REQ or ADR change is made here.
 
 ---
 
