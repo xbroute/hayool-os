@@ -1,10 +1,10 @@
 # M0.0 Engineering Bootstrap (Shadow Mode)
 
-Scope: a small, replaceable gate for repository changes. It builds no Hayool product capability. `engrun.py` never writes to GitHub, calls a model, merges, deploys, or reads production credentials. The only workflow has read-only repository permission and runs on a PR head with no secrets. Its artifact binds eight deterministic check results to the PR head SHA.
+Scope: a small, replaceable gate for repository changes. It builds no Hayool product capability. `engrun.py` never writes to GitHub, calls a model, merges, deploys, or reads production credentials. The only workflow has read-only repository permission and runs on a PR head with no secrets. Its artifact binds eight deterministic check results plus the GitHub CI result to the PR head SHA.
 
 ## Run contract
 
-`engrun.schema.json` describes one `ENG-RUN-*` record. One writer is scoped to a `codex/*` branch and a maximum one-hour lease. At least two other identities produce read-only reports for the same target SHA. The evaluator rejects a stale target or policy SHA, lower-than-computed risk, a missing or failed hard check, a dirty-checkout report, a changed evidence hash, an expired lease, more than three repair iterations, more than 60 minutes elapsed, any paid external cost, an engaged kill switch, or any shadow merge/deployment authority. AI review votes cannot override a deterministic failure.
+`engrun.schema.json` describes one `ENG-RUN-*` record. One writer is scoped to a `codex/*` branch and a maximum one-hour lease. At least two other identities produce read-only reports for the same target SHA. The evaluator rejects a stale target or policy SHA, lower-than-computed risk, a missing or failed hard check including real GitHub CI, a dirty-checkout report, a changed evidence hash, an expired lease, more than three repair iterations, more than 60 minutes elapsed, any paid external cost, an engaged kill switch, or any shadow merge/deployment authority. AI review votes cannot override a deterministic failure.
 
 The checked-in `kill_switch.json` disables autonomous writes, merge, deployment and external calls. M0 has no autonomous dispatcher to re-enable them. The operator can additionally set `engaged=true` to make the gate fail. These checks are a bounded local control, not a production orchestration or identity service.
 
@@ -18,6 +18,8 @@ The secret patterns are a baseline, not comprehensive detection. Archived proven
 
 ## Evidence use
 
-For a real shadow PR: record the base/head SHA and changed paths; run CI; retrieve its JSON artifact; have two read-only reviewers inspect that exact SHA and artifact; save their signed or attributable reports; evaluate the ENG-RUN record against those files; retain the run JSON, report hashes, CI URL, review identity/model disclosure and failure-injection output. New commits invalidate affected checks and reviews. Model/provider identity hidden by the host is recorded as unavailable, never guessed.
+For a real shadow PR: record the base/head SHA and changed paths; run CI; retrieve its JSON artifact; have two read-only reviewers inspect that exact SHA and artifact; save their signed or attributable reports; evaluate the ENG-RUN record against those files; retain the run JSON, report hashes, CI URL, review identity/model disclosure and failure-injection output. New commits invalidate affected checks and reviews. The gateway, requested and effective provider/model, and whether the effective identity was verified are recorded. Hidden identity is recorded as unavailable and blocks a PASS rather than being guessed.
 
 `python3 bootstrap/engrun.py RUN.json --root EVIDENCE_DIR --sha EXACT_HEAD_SHA` returns a nonzero exit code on any failure. The JSON schema is descriptive; the stdlib evaluator is the executed gate. All evidence is scoped to the exact SHA rather than to a mutable branch name.
+
+Current GitHub Actions runs on PR #1 and PR #2 did not start due an account payment/spending-limit annotation. ENG-RUN requires a successful real CI proof; local PASS cannot replace it.

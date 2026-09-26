@@ -10,7 +10,7 @@ The earlier queue below is historical V7.2 pre-code guidance. The owner has now 
 | 4 | After M0.0 is genuinely PASS and its bootstrap is merged by an independent authorized reviewer, run M0.2 on the final exact SHA. | All required architecture domains independently reviewed; P0/P1 closed; hard checks green; immutable evidence indexed. |
 | 5 | Stop before V1.0 implementation and deliver the Engineering Bootstrap report. | M0.0 and M0.2 evidence-backed results with explicit remaining manual controls and V1.0 entry plan. |
 
-Current manual blocker: `main` is unprotected because branch-protection and rulesets endpoints return HTTP 403 for this private repository on its current plan. M0.0 and M0.2 stay PENDING until actual proof meets their gates. Candidate versions and licenses are listed in `docs/engineering/DEPENDENCY_VALIDATION.md`; no product dependency is installed. No REQ or ADR change is made here.
+Current manual blockers: GitHub Actions jobs on PR #1 and #2 were not started because GitHub reported account payment/spending-limit trouble; no CI evidence can pass until billing is fixed. `main` is unprotected because branch-protection and rulesets endpoints return HTTP 403 for this private repository on its current plan. M0.0 and M0.2 stay PENDING until actual proof meets their gates. Candidate versions and licenses are listed in `docs/engineering/DEPENDENCY_VALIDATION.md`; no product dependency is installed. No REQ or ADR change is made here.
 
 ---
 

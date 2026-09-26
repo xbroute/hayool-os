@@ -16,7 +16,7 @@ class EngineeringRunGateTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.target = "a" * 40
         self.base = "b" * 40
-        report = {"target_sha": self.target, "workspace_clean": True, "checks": {name: "PASS" for name in REQUIRED_CHECKS}}
+        report = {"base_sha": self.base, "target_sha": self.target, "workspace_clean": True, "checks": {name: "PASS" for name in REQUIRED_CHECKS}, "source": "github_actions", "conclusion": "success", "url": "https://github.com/xbroute/hayool-os/actions/runs/1"}
         self._write("baseline.json", report)
         for name in ("review-1.json", "review-2.json"):
             self._write(name, {"target_sha": self.target, "read_only": True, "verdict": "PASS"})
@@ -35,11 +35,11 @@ class EngineeringRunGateTests(unittest.TestCase):
             "writer": {
                 "id": "writer", "branch": "codex/shadow-test", "read_only": False,
                 "lease_issued_at": "2026-09-26T18:00:00Z", "lease_expires_at": "2026-09-26T19:00:00Z",
-                "provider": "OpenAI", "requested_model": "not-disclosed", "effective_model": "host-not-disclosed",
+                "gateway": "test-gateway", "requested_provider": "test-provider", "effective_provider": "test-provider", "requested_model": "test-model", "effective_model": "test-model", "identity_verified": True,
             },
             "reviewers": [
                 {"id": f"reviewer-{i}", "read_only": True, "target_sha": self.target, "verdict": "PASS",
-                 "provider": "OpenAI", "requested_model": "not-disclosed", "effective_model": "host-not-disclosed",
+                 "gateway": "test-gateway", "requested_provider": "test-provider", "effective_provider": "test-provider", "requested_model": "test-model", "effective_model": "test-model", "identity_verified": True,
                  "report_path": f"review-{i}.json", "report_sha256": self._hash(f"review-{i}.json")}
                 for i in (1, 2)
             ],
@@ -73,6 +73,16 @@ class EngineeringRunGateTests(unittest.TestCase):
             check["report_sha256"] = self._hash("baseline.json")
         errors = evaluate(self.run, self.root, self.target)
         self.assertTrue(any("hard check secrets conflicts" in error for error in errors), errors)
+
+    def test_ci_failure_cannot_be_replaced_by_local_pass(self):
+        report = json.loads((self.root / "baseline.json").read_text())
+        report["checks"]["ci"] = "FAIL"
+        report["conclusion"] = "failure"
+        self._write("baseline.json", report)
+        for check in self.run["hard_checks"]:
+            check["report_sha256"] = self._hash("baseline.json")
+        errors = evaluate(self.run, self.root, self.target)
+        self.assertTrue(any("GitHub CI proof" in error for error in errors), errors)
 
     def test_stale_sha_blocks(self):
         self.assertTrue(any("stale" in e for e in evaluate(self.run, self.root, "c" * 40)))

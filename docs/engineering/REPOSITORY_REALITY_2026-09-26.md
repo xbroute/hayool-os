@@ -24,3 +24,7 @@ The above is a scoped GitHub and checkout audit, not proof that no external infr
 ## Setting changed during bootstrap
 
 After the initial audit, the repository Actions permission API accepted `sha_pinning_required=true`; a fresh GET returned `true`. This enforces full-SHA references for Actions but does not protect `main`, require PRs or provide non-self approval. The Actions token remains read-only.
+
+## Real PR check result
+
+[Bootstrap PR #1](https://github.com/xbroute/hayool-os/pull/1) at `8b09513f9bee7e19d9bd628906969683a34f619e` and [Shadow PR #2](https://github.com/xbroute/hayool-os/pull/2) at `fa7a00b30ec247200e9615afcce83a36ef31633f` each produced a failed `engineering-baseline` check. The job annotation says: "The job was not started because recent account payments have failed or your spending limit needs to be increased." No workflow step or artifact ran. This is a GitHub billing/manual blocker, not a test failure or a passing CI run. Fix account billing and rerun the exact current PR heads before treating CI as verified.

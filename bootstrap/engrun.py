@@ -16,7 +16,7 @@ from pathlib import Path
 
 SHA = re.compile(r"^[0-9a-f]{40}$")
 REQUIRED_CHECKS = frozenset(
-    {"source_integrity", "unit", "security", "dependencies", "licenses", "secrets", "test_integrity", "traceability"}
+    {"source_integrity", "unit", "security", "dependencies", "licenses", "secrets", "test_integrity", "traceability", "ci"}
 )
 RISK_ORDER = {"R0": 0, "R1": 1, "R2": 2, "R3": 3, "R4": 4}
 
@@ -80,7 +80,7 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
     require(isinstance(writer, dict) and bool(writer.get("id")), "one named writer required")
     require(writer.get("branch") == run.get("branch") and str(run.get("branch", "")).startswith("codex/"), "writer branch mismatch")
     require(writer.get("read_only") is False, "writer role invalid")
-    require(all(writer.get(k) for k in ("provider", "requested_model", "effective_model")), "writer provider/model identity disclosure missing")
+    require(all(writer.get(k) for k in ("gateway", "requested_provider", "effective_provider", "requested_model", "effective_model")) and writer.get("identity_verified") is True, "writer provider/model identity disclosure missing")
     try:
         decided = _time(run["decided_at"])
         issued = _time(writer["lease_issued_at"])
@@ -97,7 +97,7 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
             continue
         require(review.get("read_only") is True and review.get("verdict") == "PASS", f"reviewer {index} did not pass read-only")
         require(review.get("target_sha") == expected_sha, f"reviewer {index} stale SHA")
-        require(all(review.get(k) for k in ("provider", "requested_model", "effective_model")), f"reviewer {index} identity disclosure missing")
+        require(all(review.get(k) for k in ("gateway", "requested_provider", "effective_provider", "requested_model", "effective_model")) and review.get("identity_verified") is True, f"reviewer {index} identity disclosure missing")
         require(_evidence(root, str(review.get("report_path", "")), str(review.get("report_sha256", ""))), f"reviewer {index} report missing or changed")
         try:
             review_report = json.loads((root / str(review.get("report_path", ""))).read_text(encoding="utf-8"))
@@ -118,7 +118,9 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
         require(_evidence(root, path, digest), f"hard check {name} report missing or changed")
         try:
             report = json.loads((root / path).read_text(encoding="utf-8"))
-            require(report.get("target_sha") == expected_sha and report.get("base_sha", run.get("base_sha")) == run.get("base_sha") and report.get("workspace_clean") is True and report.get("checks", {}).get(name) == "PASS", f"hard check {name} conflicts with report")
+            require(report.get("target_sha") == expected_sha and report.get("base_sha") == run.get("base_sha") and report.get("workspace_clean") is True and report.get("checks", {}).get(name) == "PASS", f"hard check {name} conflicts with report")
+            if name == "ci":
+                require(report.get("source") == "github_actions" and report.get("conclusion") == "success" and str(report.get("url", "")).startswith("https://github.com/xbroute/hayool-os/actions/runs/"), "GitHub CI proof missing or failed")
         except (OSError, ValueError, AttributeError):
             errors.append(f"hard check {name} report unreadable")
 

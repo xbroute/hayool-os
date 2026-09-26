@@ -8,8 +8,8 @@ This section supersedes the historical pre-code status below. The original V7.2 
 | Source of Truth | V7.2 exact import commit `7f8ecbd986ccb399d736bbb0f55a1345067de911` on isolated `codex/m0-bootstrap` branch; not yet merged into default branch. The original ZIP is retained as immutable provenance. |
 | Specified | V7.2 design baseline, 194 REQs and 31 ADR records, remains authoritative for bootstrap scope. |
 | Implemented | M0.0 gate code and CI workflow are under review on the bootstrap branch. No V1.0 product capability is implemented. |
-| Tested | Local ENG-RUN unit suite includes a hard-failure injection; exact-SHA PR CI and independent review remain pending until a real run is recorded. |
-| Configured | GitHub Actions enabled, default token read-only, zero workflows/secrets/environments at audit. `main` unprotected; branch-protection and rulesets APIs returned plan-level HTTP 403. |
+| Tested | Local ENG-RUN unit suite includes a hard-failure injection; GitHub PR #1 and #2 reached Actions, but each job failed before any step because GitHub reported account payment/spending-limit trouble; no CI artifact exists. Independent exact-SHA review remains pending. |
+| Configured | GitHub Actions enabled, default token read-only, zero workflows/secrets/environments at initial audit; full-SHA Action pinning was then enabled and verified. `main` unprotected; branch-protection and rulesets APIs returned plan-level HTTP 403. |
 | Verified | Package import hashes verified. No product security, staging, restore, upgrade, jurisdiction, market or production verification. |
 | Production-ready | No. No product deployment target or credentials observed. |
 

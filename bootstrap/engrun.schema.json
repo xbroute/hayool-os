@@ -85,7 +85,7 @@
     },
     "hard_checks": {
       "type": "array",
-      "minItems": 8,
+      "minItems": 9,
       "items": {
         "$ref": "#/$defs/check"
       }
@@ -174,9 +174,12 @@
         "read_only",
         "lease_issued_at",
         "lease_expires_at",
-        "provider",
         "requested_model",
-        "effective_model"
+        "effective_model",
+        "gateway",
+        "requested_provider",
+        "effective_provider",
+        "identity_verified"
       ],
       "properties": {
         "id": {
@@ -197,10 +200,6 @@
           "type": "string",
           "format": "date-time"
         },
-        "provider": {
-          "type": "string",
-          "minLength": 1
-        },
         "requested_model": {
           "type": "string",
           "minLength": 1
@@ -208,6 +207,21 @@
         "effective_model": {
           "type": "string",
           "minLength": 1
+        },
+        "gateway": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requested_provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effective_provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "identity_verified": {
+          "type": "boolean"
         }
       }
     },
@@ -219,11 +233,14 @@
         "read_only",
         "target_sha",
         "verdict",
-        "provider",
         "requested_model",
         "effective_model",
         "report_path",
-        "report_sha256"
+        "report_sha256",
+        "gateway",
+        "requested_provider",
+        "effective_provider",
+        "identity_verified"
       ],
       "properties": {
         "id": {
@@ -243,10 +260,6 @@
             "PENDING"
           ]
         },
-        "provider": {
-          "type": "string",
-          "minLength": 1
-        },
         "requested_model": {
           "type": "string",
           "minLength": 1
@@ -260,6 +273,21 @@
         },
         "report_sha256": {
           "$ref": "#/$defs/digest"
+        },
+        "gateway": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requested_provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effective_provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "identity_verified": {
+          "type": "boolean"
         }
       }
     },

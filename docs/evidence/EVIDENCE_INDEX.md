@@ -6,7 +6,7 @@ The imported V7.2 original is preserved at `archive/V7.2/Hayool-OS-V7.2-Final-So
 |---|---|---|
 | EVID-IMP-001 | V7.2 import integrity PASS | Import commit `7f8ecbd986ccb399d736bbb0f55a1345067de911` verified by reading its Git tree: original ZIP CRC, 153 safe paths, 152 file hashes in PACKAGE_MANIFEST, 61 source hashes, V7.1 predecessor hash and design digest passed before import; 152 files, 61 sources and predecessor passed again in checkout. This is import integrity, not product validation. |
 | EVID-REPO-001 | Repository baseline observed | Private `xbroute/hayool-os`, initial `main` SHA `138bdb78530403bac8407738c05fe033514a7838`, one README, GitHub settings and HTTP 403 protection blocker detailed in `docs/engineering/REPOSITORY_REALITY_2026-09-26.md`. |
-| EVID-ENG-001 | M0.0 | **PENDING** until real Shadow PR, exact-SHA check/review evidence and enforceable main protection. |
+| EVID-ENG-001 | M0.0 | **PENDING**: draft [bootstrap PR #1](https://github.com/xbroute/hayool-os/pull/1) and [Shadow PR #2](https://github.com/xbroute/hayool-os/pull/2) exist. Local exact-SHA checks passed, but both GitHub Actions jobs failed before steps due account payment/spending limit; independent review and enforceable main protection remain missing. |
 | EVID-ENG-002 | M0.2 | **PENDING**; do not run or label PASS before M0.0 PASS. |
 
 ---
