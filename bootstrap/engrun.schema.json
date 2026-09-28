@@ -8,6 +8,7 @@
     "schema_version",
     "run_id",
     "mode",
+    "ci_mode",
     "repository",
     "branch",
     "base_sha",
@@ -36,6 +37,9 @@
     },
     "mode": {
       "const": "shadow"
+    },
+    "ci_mode": {
+      "enum": ["legacy_workflow_run", "protected_main_pr_target"]
     },
     "repository": {
       "const": "xbroute/hayool-os"
@@ -253,7 +257,8 @@
         "gateway",
         "requested_provider",
         "effective_provider",
-        "identity_verified"
+        "identity_verified",
+        "findings"
       ],
       "properties": {
         "id": {
@@ -301,7 +306,24 @@
         },
         "identity_verified": {
           "type": "boolean"
+        },
+        "findings": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/finding"}
         }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "severity", "status", "target_sha", "summary"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["P0", "P1", "P2", "P3"]},
+        "status": {"enum": ["OPEN", "CLOSED"]},
+        "target_sha": {"$ref": "#/$defs/sha"},
+        "summary": {"type": "string", "minLength": 1},
+        "closure_evidence": {"type": "string", "minLength": 1}
       }
     },
     "check": {

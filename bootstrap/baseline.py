@@ -86,7 +86,7 @@ def security() -> list[str]:
         errors.append("unexpected or missing M0 workflow")
     for workflow in workflows:
         body = workflow.read_text(encoding="utf-8")
-        if "pull_request_target" in body or "secrets." in body or "write-all" in body:
+        if "secrets." in body or "write-all" in body:
             errors.append(f"unsafe workflow token in {workflow.name}")
         for action in re.findall(r"^\s*-?\s*uses:\s*([^\s#]+)", body, re.MULTILINE):
             if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}", action):
@@ -95,18 +95,28 @@ def security() -> list[str]:
             errors.append(f"workflow {workflow.name} lacks explicit read-only contents permission")
         if workflow.name == "engineering-trusted-gate.yml":
             if not all(token in body for token in (
-                "workflow_run:", "workflows: [engineering-candidate]",
+                "pull_request_target:", "branches: [main]", "permissions: {}",
+                "candidate-check:", "trusted-gate:", "needs: candidate-check",
                 "statuses: write", "actions: read", "ref: ${{ github.sha }}",
-                "bootstrap/trusted_gate.py", "--post-status",
+                "path: candidate", "persist-credentials: false",
+                "HAYOOL_CANDIDATE_ROOT:", "policy/bootstrap/baseline.py",
+                "bootstrap/trusted_gate.py", "--pr-target-event", "--post-status",
+                "--require-trusted-artifact", "--verify-outcome", "--upload-outcome",
             )):
                 errors.append("trusted workflow loses default-branch gate contract")
-            # This job receives status-writing authority. It may read a PR
-            # artifact as data, but must never check out or execute PR code.
+            # The first job has only read access and runs candidate tests in
+            # baseline.unit()'s container. The second job can post a status,
+            # but checks out only protected main and reads the first artifact.
+            candidate_job = body.split("  candidate-check:", 1)[-1].split("  trusted-gate:", 1)[0]
+            trusted_job = body.split("  trusted-gate:", 1)[-1]
+            if "statuses: write" in candidate_job or "ref: ${{ github.event.pull_request.head.sha }}" in trusted_job:
+                errors.append("status-writing job can access untrusted PR code")
+            if "contents: read" not in candidate_job or "statuses: write" not in trusted_job:
+                errors.append("trusted job permission boundary missing")
             if any(token in body for token in (
-                "github.event.workflow_run.head_sha }}", "github.event.pull_request.head.sha }}",
-                "--privileged", "docker run", "npm ", "pip install",
+                "workflow_run:", "--privileged", "npm ", "pip install",
             )):
-                errors.append("trusted workflow can execute untrusted PR code")
+                errors.append("trusted workflow has an unsafe trigger or command")
         else:
             if "workflow_run:" in body or "statuses: write" in body or re.search(
                 r"(?im)\b[A-Za-z_-]+:\s*write\b|permissions:\s*write-all\b", body

@@ -56,6 +56,38 @@ def _evidence(root: Path, relative: str, expected: str) -> bool:
     return hashlib.sha256(candidate.read_bytes()).hexdigest() == expected
 
 
+def _review_findings(findings: object, expected_sha: str, index: int) -> list[str]:
+    """Treat reviewer findings as gate inputs, never as optional prose."""
+    if not isinstance(findings, list):
+        return [f"reviewer {index} findings missing or invalid"]
+    errors: list[str] = []
+    seen: set[str] = set()
+    for item in findings:
+        if not isinstance(item, dict):
+            errors.append(f"reviewer {index} finding is not an object")
+            continue
+        finding_id = item.get("id")
+        severity = item.get("severity")
+        status = item.get("status")
+        if (set(item) - {"id", "severity", "status", "target_sha", "summary", "closure_evidence"}
+                or not isinstance(finding_id, str) or not finding_id.strip()
+                or finding_id in seen
+                or severity not in {"P0", "P1", "P2", "P3"}
+                or status not in {"OPEN", "CLOSED"}
+                or item.get("target_sha") != expected_sha
+                or not isinstance(item.get("summary"), str) or not item["summary"].strip()):
+            errors.append(f"reviewer {index} finding malformed, duplicate, or stale")
+            continue
+        seen.add(finding_id)
+        if status == "OPEN" and severity in {"P0", "P1"}:
+            errors.append(f"reviewer {index} open {severity} finding: {finding_id}")
+        if status == "CLOSED" and severity in {"P0", "P1"} and not (
+            isinstance(item.get("closure_evidence"), str) and item["closure_evidence"].strip()
+        ):
+            errors.append(f"reviewer {index} closed {severity} finding lacks closure evidence: {finding_id}")
+    return errors
+
+
 def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
     errors: list[str] = []
 
@@ -66,6 +98,7 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
     require(run.get("schema_version") == 2, "unsupported schema_version")
     require(bool(re.fullmatch(r"ENG-RUN-[A-Za-z0-9_-]+", str(run.get("run_id", "")))), "invalid run_id")
     require(run.get("mode") == "shadow", "M0 runner permits shadow mode only")
+    require(run.get("ci_mode") in {"legacy_workflow_run", "protected_main_pr_target"}, "CI trust mode missing or invalid")
     require(run.get("repository") == "xbroute/hayool-os", "repository mismatch")
     for field in ("base_sha", "target_sha", "policy_sha"):
         require(bool(SHA.fullmatch(str(run.get(field, "")))), f"invalid {field}")
@@ -102,8 +135,13 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
         require(all(review.get(k) for k in ("gateway", "requested_provider", "effective_provider", "requested_model", "effective_model")) and review.get("identity_verified") is True, f"reviewer {index} identity disclosure missing")
         require(_evidence(root, str(review.get("report_path", "")), str(review.get("report_sha256", ""))), f"reviewer {index} report missing or changed")
         try:
-            review_report = json.loads((root / str(review.get("report_path", ""))).read_text(encoding="utf-8"))
+            review_path = (root / str(review.get("report_path", ""))).resolve()
+            if not review_path.is_relative_to(root.resolve()):
+                raise ValueError("review path escaped evidence root")
+            review_report = json.loads(review_path.read_text(encoding="utf-8"))
             require(review_report.get("target_sha") == expected_sha and review_report.get("read_only") is True and review_report.get("verdict") == "PASS", f"reviewer {index} report conflicts with attestation")
+            require(review_report.get("findings") == review.get("findings"), f"reviewer {index} findings differ from hashed report")
+            errors.extend(_review_findings(review_report.get("findings"), expected_sha, index))
         except (OSError, ValueError, AttributeError):
             errors.append(f"reviewer {index} report unreadable")
 
@@ -137,14 +175,18 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
             if not report_path.is_relative_to(root.resolve()):
                 raise ValueError("trusted gate report escaped evidence root")
             gate_report = json.loads(report_path.read_text(encoding="utf-8"))
+            protected = run.get("ci_mode") == "protected_main_pr_target"
             require(
-                gate_report.get("schema_version") == 1
+                gate_report.get("schema_version") == (2 if protected else 1)
                 and gate_report.get("decision") == "PASS"
                 and gate_report.get("github_api_verified") is True
+                and (not protected or gate_report.get("source") == "protected_main_pr_target")
                 and gate_report.get("repository") == run.get("repository")
                 and gate_report.get("base_sha") == run.get("base_sha")
                 and gate_report.get("head_sha") == expected_sha
                 and gate_report.get("policy_sha") == run.get("policy_sha")
+                and (not protected or (gate_report.get("trusted_run_id") == gate.get("run_id")
+                                       and gate_report.get("trusted_run_attempt") == gate.get("run_attempt")))
                 and gate_report.get("errors") == []
                 and isinstance(gate_report.get("checks"), dict)
                 and set(gate_report["checks"]) == REQUIRED_CHECKS - {"ci"}
@@ -198,12 +240,174 @@ def _download_trusted(run_id: str, artifact_name: str) -> bytes:
         return (Path(directory) / "trusted-gate.json").read_bytes()
 
 
+def _artifact_zip(artifact_id: int) -> bytes:
+    """Download exact ZIP bytes so the GitHub artifact digest can be checked."""
+    from bootstrap.trusted_gate import GitHubClient
+
+    token = subprocess.check_output(["gh", "auth", "token"], text=True, timeout=10).strip()
+    return GitHubClient(token).get_artifact_zip(
+        f"repos/xbroute/hayool-os/actions/artifacts/{artifact_id}/zip"
+    )
+
+
+def verify_protected_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
+    """Authenticate the completed default-main PR-target run and server policy."""
+    try:
+        gate = run.get("trusted_gate")
+        if not isinstance(gate, dict):
+            return ["protected-main trusted gate evidence is absent"]
+        run_id = gate["run_id"]
+        if type(run_id) is not int or run_id <= 0:
+            return ["protected-main run ID is invalid"]
+        report_path = (root / str(gate["report_path"])).resolve()
+        if not report_path.is_relative_to(root.resolve()):
+            return ["trusted gate report escaped evidence root"]
+        report_bytes = report_path.read_bytes()
+        if hashlib.sha256(report_bytes).hexdigest() != gate.get("report_sha256"):
+            return ["protected-main report digest mismatch"]
+        report = json.loads(report_bytes)
+        pr_number = report.get("pr_number")
+        if type(pr_number) is not int or pr_number <= 0:
+            return ["protected-main PR number missing"]
+        live_pr = _github_json(f"pulls/{pr_number}")
+        main_ref = _github_json("git/ref/heads/main")
+        if not (
+            live_pr.get("state") == "open"
+            and live_pr.get("head", {}).get("sha") == expected_sha
+            and live_pr.get("head", {}).get("ref") == run.get("branch")
+            and live_pr.get("head", {}).get("repo", {}).get("full_name") == run.get("repository")
+            and live_pr.get("base", {}).get("ref") == "main"
+            and live_pr.get("base", {}).get("sha") == run.get("base_sha")
+            and main_ref.get("object", {}).get("sha") == run.get("policy_sha")
+        ):
+            return ["protected-main PR/head/base/policy is stale or inconsistent"]
+        observed = _github_json(f"actions/runs/{run_id}")
+        if not (
+            observed.get("id") == run_id
+            and observed.get("repository", {}).get("full_name") == run.get("repository")
+            and observed.get("event") == "pull_request_target"
+            and observed.get("head_sha") == run.get("policy_sha")
+            and observed.get("head_branch") == "main"
+            and observed.get("run_attempt") == gate.get("run_attempt")
+            and observed.get("status") == "completed"
+            and observed.get("conclusion") == "success"
+            and str(observed.get("path", "")).split("@", 1)[0]
+                == ".github/workflows/engineering-trusted-gate.yml"
+        ):
+            return ["protected-main GitHub run is not completed success from exact policy SHA"]
+        jobs = _github_json(f"actions/runs/{run_id}/jobs?per_page=100")
+        rows = jobs.get("jobs")
+        if not isinstance(rows, list) or jobs.get("total_count") != len(rows):
+            return ["protected-main job list incomplete"]
+        candidate = [j for j in rows if j.get("name") == "candidate-check" and j.get("conclusion") == "success"]
+        trusted = [j for j in rows if j.get("name") == "trusted-gate" and j.get("conclusion") == "success"]
+        if len(candidate) != 1 or len(trusted) != 1 or candidate[0].get("id") != report.get("candidate_job_id"):
+            return ["protected-main isolated or status job failed"]
+        artifacts = _github_json(f"actions/runs/{run_id}/artifacts?per_page=100")
+        listed = artifacts.get("artifacts")
+        if not isinstance(listed, list) or artifacts.get("total_count") != len(listed):
+            return ["protected-main artifact list incomplete"]
+        names = {
+            "baseline": f"engineering-protected-baseline-{expected_sha}",
+            "gate": f"engineering-trusted-gate-{run_id}",
+        }
+        selected = {}
+        for kind, name in names.items():
+            matches = [a for a in listed if a.get("name") == name]
+            if len(matches) != 1:
+                return [f"protected-main {kind} artifact missing or duplicated"]
+            artifact = matches[0]
+            if not (type(artifact.get("id")) is int and artifact["id"] > 0
+                    and artifact.get("expired") is False
+                    and re.fullmatch(r"sha256:[0-9a-f]{64}", str(artifact.get("digest", "")))
+                    and artifact.get("workflow_run", {}).get("id") == run_id
+                    and artifact.get("workflow_run", {}).get("head_sha") == run.get("policy_sha")):
+                return [f"protected-main {kind} artifact origin/digest invalid"]
+            selected[kind] = artifact
+        if selected["gate"]["id"] != gate.get("artifact_id"):
+            return ["protected-main trusted artifact ID mismatch"]
+        from bootstrap.trusted_gate import artifact_report
+        baseline_zip = _artifact_zip(selected["baseline"]["id"])
+        gate_zip = _artifact_zip(selected["gate"]["id"])
+        if (hashlib.sha256(baseline_zip).hexdigest() != selected["baseline"]["digest"][7:]
+                or hashlib.sha256(gate_zip).hexdigest() != selected["gate"]["digest"][7:]):
+            return ["protected-main artifact ZIP digest mismatch"]
+        baseline, baseline_sha = artifact_report(baseline_zip)
+        import io
+        import zipfile
+        with zipfile.ZipFile(io.BytesIO(gate_zip)) as bundle:
+            if bundle.namelist() != ["trusted-gate.json"]:
+                return ["protected-main trusted artifact members invalid"]
+            downloaded_gate = bundle.read("trusted-gate.json")
+        if downloaded_gate != report_bytes:
+            return ["protected-main trusted artifact differs from retained report"]
+        check = next((c for c in run.get("hard_checks", []) if c.get("name") == "source_integrity"), None)
+        ci_check = next((c for c in run.get("hard_checks", []) if c.get("name") == "ci"), None)
+        if not check or not ci_check:
+            return ["protected-main hard-check evidence missing"]
+        baseline_path = (root / str(check["report_path"])).resolve()
+        ci_path = (root / str(ci_check["report_path"])).resolve()
+        if not baseline_path.is_relative_to(root.resolve()) or not ci_path.is_relative_to(root.resolve()):
+            return ["protected-main hard-check report escaped evidence root"]
+        baseline_bytes = baseline_path.read_bytes()
+        ci_report = json.loads(ci_path.read_text(encoding="utf-8"))
+        expected_checks = REQUIRED_CHECKS - {"ci"}
+        if not (
+            baseline == json.loads(baseline_bytes)
+            and baseline_sha == hashlib.sha256(baseline_bytes).hexdigest()
+            and baseline.get("base_sha") == run.get("base_sha")
+            and baseline.get("target_sha") == expected_sha
+            and baseline.get("policy_source") == "base"
+            and baseline.get("workspace_clean") is True
+            and set(baseline.get("checks", {})) == expected_checks
+            and all(baseline["checks"][name] == "PASS" for name in expected_checks)
+            and report.get("candidate_artifact_id") == selected["baseline"]["id"]
+            and report.get("candidate_artifact_digest") == selected["baseline"]["digest"]
+            and report.get("baseline_json_sha256") == baseline_sha
+            and report.get("trusted_run_id") == run_id
+            and report.get("trusted_run_attempt") == observed.get("run_attempt")
+            and report.get("head_sha") == expected_sha
+            and report.get("policy_sha") == run.get("policy_sha")
+            and report.get("decision") == "PASS"
+            and report.get("errors") == []
+            and ci_report.get("url") == f"https://github.com/xbroute/hayool-os/actions/runs/{run_id}"
+            and ci_report.get("conclusion") == "success"
+        ):
+            return ["protected-main report does not bind exact run, artifact and hard checks"]
+        policy = _github_json("actions/policies/5892")
+        if not (policy.get("enforcement") == "active"
+                and policy.get("conditions", {}).get("workflow_path", {}).get("include") == ["~ALL"]
+                and policy.get("conditions", {}).get("workflow_path", {}).get("exclude") == []
+                and policy.get("rules") == [{"type": "restrict_action_events", "parameters": {
+                    "allowed_events": ["pull_request_target"]}}]):
+            return ["server-side Actions event policy is not active and exact"]
+        protection = _github_json("branches/main/protection")
+        required = protection.get("required_status_checks", {}).get("checks", [])
+        if not any(c.get("context") == "engineering-trusted-gate-status" and c.get("app_id") == 15368
+                   for c in required) or protection.get("required_status_checks", {}).get("strict") is not True:
+            return ["protected main does not require the trusted exact-head status from Actions"]
+        statuses = _github_json(f"commits/{expected_sha}/status").get("statuses", [])
+        matching = [s for s in statuses if s.get("context") == "engineering-trusted-gate-status"]
+        if not matching or not (
+            matching[0].get("state") == "success"
+            and matching[0].get("target_url") == f"https://github.com/xbroute/hayool-os/actions/runs/{run_id}"
+            and matching[0].get("creator", {}).get("login") == "github-actions[bot]"
+        ):
+            return ["protected-main exact-head status is absent, stale or failed"]
+        return []
+    except (OSError, KeyError, ValueError, TypeError, AttributeError, IndexError,
+            subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return ["protected-main GitHub evidence could not be independently verified"]
+
+
 def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
     """Require both candidate CI and a default-branch trusted verifier run.
 
     The PR-owned workflow/artifact cannot attest its own policy. The trusted
     workflow must be a separate successful ``workflow_run`` from exact main.
     """
+    if run.get("ci_mode") == "protected_main_pr_target":
+        return verify_protected_ci(run, root, expected_sha)
     check = next((c for c in run.get("hard_checks", []) if isinstance(c, dict) and c.get("name") == "ci"), None)
     if not check:
         return ["GitHub CI check is absent"]

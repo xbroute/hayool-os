@@ -33,11 +33,12 @@ class EngineeringRunGateTests(unittest.TestCase):
             "checks": {name: "PASS" for name in baseline_checks}, "errors": [],
         })
         for name in ("review-1.json", "review-2.json"):
-            self._write(name, {"target_sha": self.target, "read_only": True, "verdict": "PASS"})
+            self._write(name, {"target_sha": self.target, "read_only": True, "verdict": "PASS", "findings": []})
         self.run = {
             "schema_version": 2,
             "run_id": "ENG-RUN-test",
             "mode": "shadow",
+            "ci_mode": "legacy_workflow_run",
             "repository": "xbroute/hayool-os",
             "branch": "codex/shadow-test",
             "base_sha": self.base,
@@ -53,6 +54,7 @@ class EngineeringRunGateTests(unittest.TestCase):
             },
             "reviewers": [
                 {"id": f"reviewer-{i}", "read_only": True, "target_sha": self.target, "verdict": "PASS",
+                 "findings": [],
                  "gateway": "test-gateway", "requested_provider": "test-provider", "effective_provider": "test-provider", "requested_model": "test-model", "effective_model": "test-model", "identity_verified": True,
                  "report_path": f"review-{i}.json", "report_sha256": self._hash(f"review-{i}.json")}
                 for i in (1, 2)
@@ -143,6 +145,63 @@ class EngineeringRunGateTests(unittest.TestCase):
         self.assertTrue(all(review["verdict"] == "PASS" for review in self.run["reviewers"]))
         errors = evaluate(self.run, self.root, self.target)
         self.assertTrue(any("trusted gate report failed" in error for error in errors), errors)
+
+    def test_open_p1_finding_blocks_ai_pass_votes(self):
+        finding = {"id": "SEC-1", "severity": "P1", "status": "OPEN",
+                   "target_sha": self.target, "summary": "required check can be forged"}
+        report = json.loads((self.root / "review-1.json").read_text())
+        report["findings"] = [finding]
+        self._write("review-1.json", report)
+        self.run["reviewers"][0]["findings"] = [finding]
+        self.run["reviewers"][0]["report_sha256"] = self._hash("review-1.json")
+        self.assertTrue(all(review["verdict"] == "PASS" for review in self.run["reviewers"]))
+        errors = evaluate(self.run, self.root, self.target)
+        self.assertTrue(any("open P1" in error for error in errors), errors)
+
+    def test_review_findings_must_be_present_and_match_hashed_report(self):
+        del self.run["reviewers"][0]["findings"]
+        errors = evaluate(self.run, self.root, self.target)
+        self.assertTrue(any("findings differ" in error for error in errors), errors)
+
+    def test_malformed_or_stale_finding_is_rejected(self):
+        finding = {"id": "SEC-2", "severity": "P1", "status": "OPEN",
+                   "target_sha": "c" * 40, "summary": "stale review"}
+        self.run["reviewers"][0]["findings"] = [finding]
+        self._write("review-1.json", {"target_sha": self.target, "read_only": True,
+                                      "verdict": "PASS", "findings": [finding]})
+        self.run["reviewers"][0]["report_sha256"] = self._hash("review-1.json")
+        errors = evaluate(self.run, self.root, self.target)
+        self.assertTrue(any("malformed, duplicate, or stale" in error for error in errors), errors)
+
+    def test_open_p2_is_recorded_without_blocking(self):
+        finding = {"id": "MAINT-2", "severity": "P2", "status": "OPEN",
+                   "target_sha": self.target, "summary": "manual evidence entry"}
+        self.run["reviewers"][0]["findings"] = [finding]
+        self._write("review-1.json", {"target_sha": self.target, "read_only": True,
+                                      "verdict": "PASS", "findings": [finding]})
+        self.run["reviewers"][0]["report_sha256"] = self._hash("review-1.json")
+        self.assertEqual(evaluate(self.run, self.root, self.target), [])
+
+    def test_open_p0_blocks_and_closed_p1_needs_closure_evidence(self):
+        findings = [
+            {"id": "SEC-0", "severity": "P0", "status": "OPEN",
+             "target_sha": self.target, "summary": "critical gate bypass"},
+            {"id": "SEC-1", "severity": "P1", "status": "CLOSED",
+             "target_sha": self.target, "summary": "fixed without evidence"},
+        ]
+        self.run["reviewers"][0]["findings"] = findings
+        self._write("review-1.json", {"target_sha": self.target, "read_only": True,
+                                      "verdict": "PASS", "findings": findings})
+        self.run["reviewers"][0]["report_sha256"] = self._hash("review-1.json")
+        errors = evaluate(self.run, self.root, self.target)
+        self.assertTrue(any("open P0" in error for error in errors), errors)
+        self.assertTrue(any("lacks closure evidence" in error for error in errors), errors)
+
+    def test_protected_mode_does_not_accept_candidate_only_run(self):
+        self.run["ci_mode"] = "protected_main_pr_target"
+        del self.run["trusted_gate"]
+        self.assertEqual(verify_github_ci(self.run, self.root, self.target),
+                         ["protected-main trusted gate evidence is absent"])
 
     def test_regression_pr_controlled_workflow_cannot_self_attest(self):
         """A PR-controlled baseline workflow alone must never authorize ENG-RUN."""

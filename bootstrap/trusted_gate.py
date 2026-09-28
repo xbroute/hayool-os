@@ -1,9 +1,9 @@
-"""Verify an untrusted PR run from a default-branch ``workflow_run`` job.
+"""Verify exact PR evidence from a protected default-branch workflow.
 
-This process reads GitHub API responses and artifact bytes only. It never checks
-out, imports, or executes code from the pull request. Its own workflow must be
-loaded from the protected default branch; this script cannot establish that
-trust boundary for the initial PR that installs it.
+This status-writing process reads GitHub API responses and artifact bytes only.
+It never checks out, imports, or executes code from the pull request. Its own
+workflow must be loaded from protected main. A repository Actions policy must
+allow only pull_request_target before its status can be trusted against spoofing.
 """
 
 from __future__ import annotations
@@ -25,6 +25,7 @@ import zlib
 from pathlib import Path
 
 WORKFLOW_PATH = ".github/workflows/engineering-baseline.yml"
+TRUSTED_WORKFLOW_PATH = ".github/workflows/engineering-trusted-gate.yml"
 POLICY_PATH = "bootstrap/baseline.py"
 GATE_PATH = "bootstrap/trusted_gate.py"
 ENGRUN_PATH = "bootstrap/engrun.py"
@@ -286,6 +287,179 @@ def evaluate(event: dict[str, object], repo: str, policy_sha: str, client: GitHu
     }
 
 
+def target_identity(event: dict[str, object], repo: str, policy_sha: str,
+                    client: GitHubClient) -> tuple[int, str]:
+    """Resolve the live current PR head, never trusting event text alone."""
+    demand(REPO_RE.fullmatch(repo) is not None, "invalid repository")
+    sha(policy_sha, "policy SHA")
+    event_pr = event.get("pull_request")
+    demand(isinstance(event_pr, dict), "PR event missing")
+    number = event_pr.get("number")
+    demand(isinstance(number, int) and number > 0, "PR number missing")
+    pr = client.get_json(f"repos/{repo}/pulls/{number}")
+    demand(pr.get("number") == number and pr.get("state") == "open", "PR is not open")
+    head = pr.get("head")
+    base = pr.get("base")
+    demand(isinstance(head, dict) and isinstance(base, dict), "PR head/base missing")
+    head_sha = sha(head.get("sha"), "head SHA")
+    demand(head.get("repo", {}).get("full_name") == repo, "forked PR is outside M0 scope")
+    demand(base.get("ref") == "main" and base.get("sha") == policy_sha, "PR base/policy SHA mismatch")
+    demand(event_pr.get("head", {}).get("sha") == head_sha
+           and event_pr.get("base", {}).get("sha") == policy_sha,
+           "PR event differs from live head/base")
+    main_ref = client.get_json(f"repos/{repo}/git/ref/heads/main")
+    demand(main_ref.get("object", {}).get("sha") == policy_sha, "policy is no longer current main")
+    return number, head_sha
+
+
+def evaluate_pr_target(event: dict[str, object], repo: str, policy_sha: str,
+                       run_id: int, run_attempt: int, client: GitHubClient) -> dict[str, object]:
+    """Bind a default-main PR-target run, isolated job, and exact artifact."""
+    number, head_sha = target_identity(event, repo, policy_sha, client)
+    run = client.get_json(f"repos/{repo}/actions/runs/{run_id}")
+    demand(run.get("id") == run_id and run.get("run_attempt") == run_attempt,
+           "trusted run ID/attempt mismatch")
+    demand(run.get("repository", {}).get("full_name") == repo
+           and run.get("event") == "pull_request_target"
+           and run.get("head_sha") == policy_sha
+           and run.get("head_branch") == "main"
+           and str(run.get("path", "")).split("@", 1)[0] == TRUSTED_WORKFLOW_PATH,
+           "trusted run is not the protected-main workflow")
+    demand(run.get("status") in {"queued", "in_progress", "completed"}, "trusted run status invalid")
+
+    trusted_tree = workflow_tree(client, repo, policy_sha)
+    candidate_tree = workflow_tree(client, repo, head_sha)
+    demand(candidate_tree == trusted_tree, "candidate workflow tree differs from trusted policy")
+    policy_hashes: dict[str, str] = {}
+    for path in (WORKFLOW_PATH, TRUSTED_WORKFLOW_PATH, POLICY_PATH, GATE_PATH,
+                 ENGRUN_PATH, ENGRUN_SCHEMA_PATH):
+        trusted_bytes = api_content(client, repo, path, policy_sha)
+        demand(api_content(client, repo, path, head_sha) == trusted_bytes,
+               "candidate changed trusted policy bytes: " + path)
+        policy_hashes[path] = hashlib.sha256(trusted_bytes).hexdigest()
+
+    jobs = client.get_json(f"repos/{repo}/actions/runs/{run_id}/jobs?per_page=100")
+    rows = jobs.get("jobs")
+    demand(isinstance(rows, list) and jobs.get("total_count") == len(rows), "trusted job list incomplete")
+    candidates = [row for row in rows if isinstance(row, dict) and row.get("name") == "candidate-check"]
+    demand(len(candidates) == 1 and candidates[0].get("conclusion") == "success",
+           "isolated candidate job missing or failed")
+    candidate_job = candidates[0]
+    candidate_job_id = candidate_job.get("id")
+    demand(isinstance(candidate_job_id, int) and candidate_job_id > 0,
+           "candidate job ID missing")
+    check = client.get_json(f"repos/{repo}/check-runs/{candidate_job_id}")
+    demand(check.get("id") == candidate_job_id and check.get("name") == "candidate-check"
+           and check.get("conclusion") == "success"
+           and check.get("app", {}).get("slug") == "github-actions"
+           and check.get("check_suite", {}).get("id") == run.get("check_suite_id"),
+           "isolated candidate check provenance mismatch")
+
+    listing = client.get_json(f"repos/{repo}/actions/runs/{run_id}/artifacts?per_page=100")
+    artifacts = listing.get("artifacts")
+    demand(isinstance(artifacts, list) and listing.get("total_count") == len(artifacts),
+           "trusted artifact list incomplete")
+    expected_name = f"engineering-protected-baseline-{head_sha}"
+    matching = [row for row in artifacts if isinstance(row, dict) and row.get("name") == expected_name]
+    demand(len(matching) == 1, "protected baseline artifact missing or duplicated")
+    artifact = matching[0]
+    artifact_id = artifact.get("id")
+    digest = artifact.get("digest")
+    demand(isinstance(artifact_id, int) and artifact_id > 0
+           and artifact.get("expired") is False
+           and isinstance(artifact.get("size_in_bytes"), int)
+           and artifact["size_in_bytes"] <= MAX_ARTIFACT_BYTES
+           and isinstance(digest, str) and SHA256_RE.fullmatch(digest) is not None,
+           "protected baseline artifact metadata invalid")
+    origin = artifact.get("workflow_run")
+    demand(isinstance(origin, dict) and origin.get("id") == run_id
+           and origin.get("head_sha") == policy_sha,
+           "protected baseline artifact origin mismatch")
+    archive = client.get_artifact_zip(f"repos/{repo}/actions/artifacts/{artifact_id}/zip")
+    demand(hashlib.sha256(archive).hexdigest() == digest[7:], "protected artifact digest mismatch")
+    baseline, baseline_sha256 = artifact_report(archive)
+    demand(baseline.get("schema_version") == 1 and baseline.get("policy_source") == "base"
+           and baseline.get("base_sha") == policy_sha
+           and baseline.get("target_sha") == head_sha
+           and baseline.get("workspace_clean") is True,
+           "protected baseline report SHA/policy mismatch")
+    checks = baseline.get("checks")
+    errors = baseline.get("errors")
+    demand(isinstance(checks, dict) and set(checks) == HARD_CHECKS
+           and all(value == "PASS" for value in checks.values())
+           and isinstance(errors, dict) and set(errors) == HARD_CHECKS
+           and all(value == [] for value in errors.values()),
+           "protected baseline hard checks failed or incomplete")
+    return {
+        "schema_version": 2, "decision": "PASS", "github_api_verified": True,
+        "source": "protected_main_pr_target", "repository": repo, "pr_number": number,
+        "base_sha": policy_sha, "head_sha": head_sha, "policy_sha": policy_sha,
+        "trusted_run_id": run_id, "trusted_run_attempt": run_attempt,
+        "candidate_job_id": candidate_job_id, "candidate_artifact_id": artifact_id,
+        "candidate_artifact_digest": digest, "baseline_json_sha256": baseline_sha256,
+        "workflow_tree_sha256": hashlib.sha256(json.dumps(trusted_tree, separators=(",", ":")).encode()).hexdigest(),
+        "policy_hashes": policy_hashes,
+        "checks": {name: "PASS" for name in sorted(HARD_CHECKS)}, "errors": [],
+    }
+
+
+def post_target_status(client: GitHubClient, event: dict[str, object], repo: str,
+                       policy_sha: str, run_id: int, result: dict[str, object],
+                       state: str | None = None) -> None:
+    number, head_sha = target_identity(event, repo, policy_sha, client)
+    if result.get("decision") == "PASS":
+        demand(result.get("pr_number") == number and result.get("head_sha") == head_sha
+               and result.get("trusted_run_id") == run_id, "PASS report is not current PR")
+    state = state or ("success" if result.get("decision") == "PASS" else "failure")
+    demand(state in {"pending", "success", "failure"}, "invalid target status state")
+    client.post_json(f"repos/{repo}/statuses/{head_sha}", {
+        "state": state, "context": "engineering-trusted-gate-status",
+        "description": {"pending": "Protected-main verification in progress",
+                        "success": "Protected-main exact-SHA checks verified",
+                        "failure": "Protected-main hard gate failed"}[state],
+        "target_url": f"https://github.com/{repo}/actions/runs/{run_id}",
+    })
+    result["head_sha"] = head_sha
+    result["trusted_run_id"] = run_id
+
+
+def require_trusted_artifact(client: GitHubClient, repo: str, run_id: int,
+                             policy_sha: str, expected: dict[str, object],
+                             first_report: Path) -> None:
+    """A PASS cannot be published before the trusted report is preserved."""
+    prior = json.loads(first_report.read_text(encoding="utf-8"))
+    demand(prior == expected and prior.get("decision") == "PASS",
+           "pre-upload and final trusted reports disagree")
+    listing = client.get_json(f"repos/{repo}/actions/runs/{run_id}/artifacts?per_page=100")
+    rows = listing.get("artifacts")
+    demand(isinstance(rows, list) and listing.get("total_count") == len(rows),
+           "trusted artifact listing incomplete")
+    matches = [row for row in rows if isinstance(row, dict)
+               and row.get("name") == f"engineering-trusted-gate-{run_id}"]
+    demand(len(matches) == 1, "trusted artifact missing or duplicated")
+    artifact = matches[0]
+    artifact_id = artifact.get("id")
+    digest = artifact.get("digest")
+    demand(isinstance(artifact_id, int) and artifact_id > 0
+           and artifact.get("expired") is False
+           and isinstance(digest, str) and SHA256_RE.fullmatch(digest) is not None
+           and artifact.get("workflow_run", {}).get("id") == run_id
+           and artifact.get("workflow_run", {}).get("head_sha") == policy_sha,
+           "trusted artifact origin invalid")
+    archive = client.get_artifact_zip(f"repos/{repo}/actions/artifacts/{artifact_id}/zip")
+    demand(hashlib.sha256(archive).hexdigest() == digest[7:],
+           "trusted artifact ZIP digest mismatch")
+    try:
+        with zipfile.ZipFile(io.BytesIO(archive)) as bundle:
+            demand(bundle.namelist() == ["trusted-gate.json"],
+                   "trusted artifact members invalid")
+            data = bundle.read("trusted-gate.json")
+    except (zipfile.BadZipFile, RuntimeError, zlib.error) as exc:
+        raise GateError("trusted artifact ZIP invalid") from exc
+    demand(len(data) <= MAX_REPORT_BYTES and json.loads(data) == expected,
+           "trusted artifact content differs from gate decision")
+
+
 def linked_head_for_failure(event: dict[str, object], repo: str, client: GitHubClient) -> tuple[str, int]:
     """Return a live, current PR head only; never post to a head from event data alone."""
     event_run = event.get("workflow_run")
@@ -329,21 +503,47 @@ def post_gate_status(client: GitHubClient, event: dict[str, object], repo: str,
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--event", type=Path, required=True)
+    events = parser.add_mutually_exclusive_group(required=True)
+    events.add_argument("--event", type=Path, help="legacy workflow_run evidence only")
+    events.add_argument("--pr-target-event", type=Path, help="protected-main pull_request_target event")
     parser.add_argument("--repo", required=True)
     parser.add_argument("--policy-sha", required=True)
+    parser.add_argument("--run-id", type=int)
+    parser.add_argument("--run-attempt", type=int)
+    parser.add_argument("--require-trusted-artifact", type=Path,
+                        help="pre-upload report; require its uploaded artifact before PASS")
+    parser.add_argument("--verify-outcome")
+    parser.add_argument("--upload-outcome")
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--post-status", action="store_true", help="advisory status; does not establish an independent App identity")
+    parser.add_argument("--post-status", action="store_true", help="requires server-side event policy before status is trusted")
     args = parser.parse_args()
     client = None
     event = None
     try:
-        event = json.loads(args.event.read_text(encoding="utf-8"))
+        event_path = args.pr_target_event or args.event
+        assert event_path is not None
+        event = json.loads(event_path.read_text(encoding="utf-8"))
         demand(isinstance(event, dict), "workflow event is not an object")
         client = GitHubClient(os.environ.get("GITHUB_TOKEN", ""))
-        if args.post_status:
-            post_gate_status(client, event, args.repo, {"decision": "FAIL"}, state="pending")
-        result = evaluate(event, args.repo, args.policy_sha, client)
+        if args.pr_target_event is not None:
+            demand(isinstance(args.run_id, int) and args.run_id > 0
+                   and isinstance(args.run_attempt, int) and args.run_attempt > 0,
+                   "trusted run ID/attempt missing")
+            if args.post_status:
+                post_target_status(client, event, args.repo, args.policy_sha, args.run_id,
+                                   {"decision": "FAIL"}, state="pending")
+            result = evaluate_pr_target(event, args.repo, args.policy_sha,
+                                        args.run_id, args.run_attempt, client)
+            if args.require_trusted_artifact is not None:
+                demand(args.verify_outcome == "success" and args.upload_outcome == "success",
+                       "pre-upload verification or artifact upload failed")
+                require_trusted_artifact(client, args.repo, args.run_id,
+                                         args.policy_sha, result, args.require_trusted_artifact)
+        else:
+            demand(args.require_trusted_artifact is None, "artifact mode requires PR-target event")
+            if args.post_status:
+                post_gate_status(client, event, args.repo, {"decision": "FAIL"}, state="pending")
+            result = evaluate(event, args.repo, args.policy_sha, client)
     except (GateError, OSError, ValueError, KeyError, AttributeError, TypeError,
             IndexError, binascii.Error, zlib.error, urllib.error.URLError) as exc:
         result = {
@@ -356,7 +556,11 @@ def main() -> int:
     if args.post_status and client is not None:
         try:
             demand(isinstance(event, dict), "event unavailable for final status")
-            post_gate_status(client, event, args.repo, result)
+            if args.pr_target_event is not None:
+                demand(isinstance(args.run_id, int), "trusted run ID unavailable")
+                post_target_status(client, event, args.repo, args.policy_sha, args.run_id, result)
+            else:
+                post_gate_status(client, event, args.repo, result)
         except (GateError, OSError, ValueError, AttributeError, TypeError,
                 IndexError, urllib.error.URLError) as exc:
             result["decision"] = "FAIL"

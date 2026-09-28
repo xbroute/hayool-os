@@ -1,3 +1,17 @@
+# Engineering evidence update — 2026-09-28 UTC
+
+| ID | Current observation | Acceptance limit |
+|---|---|---|
+| EVID-ENG-CI-20260928 | Actual PR #1 candidate run [36451227946](https://github.com/xbroute/hayool-os/actions/runs/36451227946) succeeded on `98241deca25660a500692d06b5106669102f3528`, artifact `10983417148`, ZIP SHA-256 `6a54a110104ce23dc4a805d8ae46db6a4b2ad0bb009d93a27b2bd8b1f4a811df`. Shadow PR #2 run [36451342576](https://github.com/xbroute/hayool-os/actions/runs/36451342576) succeeded on `b7fb307a00421405037f0f276e2483b0000a1100`, artifact `10983013579`, ZIP SHA-256 `37ffda2539df720064e344a918c97d3a3969a6fef35184f55c47373de6cd7753`. | These are genuine candidate checks but predate ADR-033 and are not final trusted-main proof. |
+| EVID-ENG-FAIL-20260928 | Draft failure-injection PR #3 [run 36450680179](https://github.com/xbroute/hayool-os/actions/runs/36450680179) failed on `610891268ec918715eec14348ff4b73f463ccbf7` when the kill switch was engaged. | Must be rebased/re-run on final architecture. No PASS claimed. |
+| EVID-ENG-REG-20260928 | In a bounded, read-only, networkless Docker container the new `test_open_p1_finding_blocks_ai_pass_votes` first failed because `evaluate()` returned `[]` for an OPEN P1 plus AI PASS votes; after the repair all 15 ENG-RUN tests passed. Five protected-target-gate regressions passed, including forged workflow rejection, failed candidate job rejection and no success before trusted artifact upload. | Local code tests; cannot prove active server-side GitHub protection. The earlier in-process poison fixture and container isolation regression remain tracked in `bootstrap/regression_tests/test_unit_boundary.py`. |
+| EVID-ENG-POLICY-5892 | GitHub API created and read back repository Actions policy `5892`: all workflow paths (`~ALL`), only `pull_request_target` allowed, `enforcement=disabled`. | This is staged configuration only. It must be activated after independent PR #1 merge and reverified before it protects any PR. Current `main` requires only candidate `engineering-baseline` from Actions App ID 15368. |
+| EVID-ENG-REVIEW-PRE-FINAL | Independent read-only Security and Engineering reviews on PR #1 SHA `98241deca25660a500692d06b5106669102f3528` used actual `openai/gpt-6-sol` identities. Security confirmed the host-test isolation repair but found the live trust source P1 open; Engineering additionally reproduced the ENG-RUN open-P1 acceptance defect. | These findings drove new code/ADR-033. New exact-final-SHA reviews remain required. |
+
+**M0.0 = PENDING; M0.2 = PENDING.** No protected-main trusted run, exact-final-SHA ENG-RUN PASS, independent GitHub approval/merge or live workflow-spoof proof exists yet. The [PR #1](https://github.com/xbroute/hayool-os/pull/1#issuecomment-5849944631) and [Shadow PR #2](https://github.com/xbroute/hayool-os/pull/2#issuecomment-5849945980) ledgers carry final-head evidence without changing a reviewed commit. The original V7.2 archive and 194 REQs are preserved; ADR-033 supersedes ADR-032; no owner decision or V1.0 feature changed.
+
+---
+
 # Engineering evidence addendum — 2026-09-26 UTC
 
 The original V7.2 package is preserved at `archive/V7.2/Hayool-OS-V7.2-Final-Source-of-Truth.zip` (SHA-256 `35054ad417242eda797d81816d81ae10a2bcc44b4a10fcc8784005c7d1d5d700`). The pre-code wording below is historical where it conflicts with this live repository addendum. Exact final-head observations are maintained without changing the reviewed commit in the linked GitHub PR evidence ledgers.

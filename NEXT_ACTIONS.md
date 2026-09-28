@@ -1,3 +1,20 @@
+# Engineering Bootstrap next actions — 2026-09-28 UTC
+
+Current gate: **M0.0 PENDING; M0.2 PENDING.** The only permitted implementation scope remains Engineering Bootstrap, with no V1.0 product feature. Slack is not an M0.0 dependency.
+
+| Order | Action | Exit condition |
+|---|---|---|
+| 1 engineering | Freeze PR #1 after ADR-033 repair; run real GitHub candidate CI and restricted-container exploit regressions, rebase Shadow PR #2 and failure-injection PR #3 onto the frozen SHA, verify their actual runs/artifact digests, and obtain two independent read-only reviews on that exact SHA. | P0/P1 findings from new code resolved; exact SHA and evidence in PR ledgers. Candidate CI is advisory until protected main is seeded. |
+| 2 manual seed | An actual GitHub collaborator other than `xbroute` reviews and approves PR #1's frozen SHA, then merges under the existing required-review and CI protection. Do not use self-approval, a dummy account or a protection bypass. | GitHub records independent approval and merge of the reviewed SHA. |
+| 3 dependent on 2 | Verify main SHA. Activate staged repository Actions policy 5892 (`~ALL` paths; only `pull_request_target`) and read it back. Require `engineering-trusted-gate-status` from GitHub Actions App ID 15368 with strict freshness; read back branch protection. | PR-controlled workflow events are server-blocked and trusted exact-head status is required. The current policy is disabled and does not satisfy this step. |
+| 4 dependent on 3 | Retarget/re-run Shadow PR #2 against main. Run a real workflow-spoof attack PR and the kill-switch failure injection under the active policy. Verify the protected-main job, both artifacts, exact SHA status and merge block for the attacks. | Hard failure cannot be overridden by AI votes or a PR-created workflow/check; evidence includes run/attempt/artifact IDs and SHA-256. |
+| 5 dependent on 4 | Produce final ENG-RUN only from live exact-SHA API/artifact/status/policy readbacks plus two independent read-only reviewer reports with no open P0/P1. | Strict evaluator returns PASS, then M0.0 may be marked PASS and state/evidence updated. |
+| 6 gated | Execute M0.2 independent architecture gate on the exact M0.0 final SHA; close P0/P1, then stop before V1.0. | Real read-only domain reviews and evidence; no product code. |
+
+ADR-033 is the traceable CI architecture update. No original REQ or owner decision changed. A human review/merge is still required for PR #1; activating the server-side policy and proving it on live PRs remain dependent verification work after that merge.
+
+---
+
 # Engineering Bootstrap next actions — 2026-09-26 UTC
 
 The queue below applies to the current repository. The older V7.2 pre-code queue after the divider is historical. The owner authorized only M0.0, followed by M0.2 **after** genuine M0.0 PASS; V1.0 product features remain prohibited.

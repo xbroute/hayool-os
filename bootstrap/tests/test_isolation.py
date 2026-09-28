@@ -26,6 +26,19 @@ class TestRunnerContract(unittest.TestCase):
         self.assertNotIn("bootstrap/regression_tests", workflow)
         self.assertIn("bootstrap/baseline.py", workflow)
 
+    def test_protected_workflow_separates_candidate_from_status_token(self):
+        workflow = (Path(__file__).resolve().parents[2] / ".github/workflows/engineering-trusted-gate.yml").read_text(encoding="utf-8")
+        candidate = workflow.split("  candidate-check:", 1)[1].split("  trusted-gate:", 1)[0]
+        gate = workflow.split("  trusted-gate:", 1)[1]
+        self.assertIn("pull_request_target:", workflow)
+        self.assertIn("contents: read", candidate)
+        self.assertNotIn("statuses: write", candidate)
+        self.assertIn("policy/bootstrap/baseline.py", candidate)
+        self.assertIn("path: candidate", candidate)
+        self.assertIn("statuses: write", gate)
+        self.assertNotIn("ref: ${{ github.event.pull_request.head.sha }}", gate)
+        self.assertIn("--require-trusted-artifact", gate)
+
     def test_container_boundary_and_limits_are_required(self):
         constants = {value for value in baseline.unit.__code__.co_consts if isinstance(value, str)}
         for required in (
