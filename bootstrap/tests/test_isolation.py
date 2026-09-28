@@ -20,6 +20,12 @@ class TestRunnerContract(unittest.TestCase):
         self.assertNotIn("TextTestRunner", names)
         self.assertIn("Popen", names)
 
+    def test_candidate_workflow_does_not_discover_tests_on_host(self):
+        workflow = (Path(__file__).resolve().parents[2] / ".github/workflows/engineering-baseline.yml").read_text(encoding="utf-8")
+        self.assertNotIn("unittest discover", workflow)
+        self.assertNotIn("bootstrap/regression_tests", workflow)
+        self.assertIn("bootstrap/baseline.py", workflow)
+
     def test_container_boundary_and_limits_are_required(self):
         constants = {value for value in baseline.unit.__code__.co_consts if isinstance(value, str)}
         for required in (

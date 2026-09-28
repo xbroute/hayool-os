@@ -41,5 +41,3 @@ jobs:
           path: ${{ runner.temp }}/baseline.json
           if-no-files-found: error
           retention-days: 30
-      - name: Run boundary regression in separate unprivileged step
-        run: python3 -I -m unittest discover -s bootstrap/regression_tests -p 'test_*.py' -v
