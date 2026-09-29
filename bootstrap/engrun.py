@@ -8,9 +8,11 @@ Pure evaluate() checks structure only and must never be reported as a PASS.
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -100,7 +102,7 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
         if not condition:
             errors.append(message)
 
-    require(run.get("schema_version") == 2, "unsupported schema_version")
+    require(run.get("schema_version") == 3, "unsupported schema_version")
     require(bool(re.fullmatch(r"ENG-RUN-[A-Za-z0-9_-]+", str(run.get("run_id", "")))), "invalid run_id")
     require(type(run.get("pr_number")) is int and run["pr_number"] > 0, "PR number missing")
     require(run.get("mode") == "shadow", "M0 runner permits shadow mode only")
@@ -123,13 +125,19 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
     require(writer.get("read_only") is False, "writer role invalid")
     require(all(writer.get(k) for k in ("gateway", "requested_provider", "effective_provider", "requested_model", "effective_model")) and writer.get("identity_verified") is True, "writer provider/model identity disclosure missing")
     require(writer.get("id") == "/root" and bool(SESSION_ID.fullmatch(str(writer.get("session_id", ""))))
-            and bool(re.fullmatch(r"[A-Za-z0-9-]+", str(writer.get("github_login", "")))),
+            and bool(re.fullmatch(r"[A-Za-z0-9-]+", str(writer.get("github_login", ""))))
+            and all(re.fullmatch(r"exec-[0-9a-f-]{36}", str(writer.get(key, "")))
+                    for key in ("commit_execution_id", "sha_execution_id")),
             "writer session or GitHub identity missing")
     try:
         decided = _time(run["decided_at"])
         issued = _time(writer["lease_issued_at"])
         expires = _time(writer["lease_expires_at"])
-        require(issued <= decided <= expires and (expires - issued).total_seconds() <= 3600, "writer lease expired or unbounded")
+        committed = _time(writer["commit_at"])
+        sha_observed = _time(writer["sha_observed_at"])
+        require(issued <= committed <= sha_observed <= expires
+                and sha_observed <= decided and (expires - issued).total_seconds() <= 3600,
+                "writer commit/SHA observation outside scoped lease or decision")
     except (KeyError, TypeError, ValueError):
         errors.append("invalid writer lease time")
     require(isinstance(reviewers, list) and len(reviewers) >= 2, "two independent reviewers required")
@@ -572,8 +580,14 @@ def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
         return ["GitHub CI could not be verified through the Actions API"]
 
 
-def verify_writer_session(run: dict, sessions_root: Path = REVIEW_SESSION_ROOT) -> list[str]:
-    """Observe the scoped writer's effective model in the app session log."""
+def verify_writer_session(run: dict, expected_sha: str,
+                          sessions_root: Path = REVIEW_SESSION_ROOT,
+                          checkout_root: Path | None = None) -> list[str]:
+    """Match the exact commit to successful commands in the writer transcript.
+
+    This is host transcript consistency, not a signed authorship attestation.
+    The PR candidate cannot read the fixed external session root.
+    """
     writer = run.get("writer")
     if not isinstance(writer, dict) or writer.get("id") != "/root":
         return ["scoped writer record missing"]
@@ -601,13 +615,67 @@ def verify_writer_session(run: dict, sessions_root: Path = REVIEW_SESSION_ROOT) 
                 or meta.get("parent_thread_id") is not None
                 or meta.get("model_provider") != writer.get("effective_provider")):
             raise ValueError("writer session identity/provider mismatch")
-        models = [(row.get("payload") or {}).get("model") for row in rows
-                  if row.get("type") == "turn_context"]
-        if not models or not isinstance(models[-1], str) or models[-1] != writer.get("effective_model"):
-            raise ValueError("writer effective model differs from session")
+        repo_cwd = "file://" + (checkout_root or Path.cwd()).resolve(strict=True).as_posix()
+        selected: dict[str, tuple[int, datetime, dict, str | None]] = {}
+        model: str | None = None
+        for index, row in enumerate(rows):
+            payload = row.get("payload") or {}
+            if row.get("type") == "turn_context":
+                model = payload.get("model")
+            if row.get("type") != "event_msg" or payload.get("type") != "item_completed":
+                continue
+            item = payload.get("item")
+            if isinstance(item, str):
+                item = ast.literal_eval(item)
+            if not isinstance(item, dict) or item.get("type") != "CommandExecution":
+                continue
+            event_id = item.get("id")
+            if event_id in (writer.get("commit_execution_id"), writer.get("sha_execution_id")):
+                if event_id in selected:
+                    raise ValueError("duplicate selected writer execution")
+                selected[event_id] = (index, _time(row["timestamp"]), item, model)
+        commit = selected.get(writer.get("commit_execution_id"))
+        sha_observation = selected.get(writer.get("sha_execution_id"))
+        if not commit or not sha_observation:
+            raise ValueError("exact commit/SHA executions absent from writer session")
+        commit_index, commit_time, commit_item, commit_model = commit
+        sha_index, sha_time, sha_item, _ = sha_observation
+        branch = run.get("branch")
+        if not isinstance(branch, str) or not SHA.fullmatch(expected_sha):
+            raise ValueError("branch or SHA invalid")
+
+        def command(item: dict) -> list[str]:
+            raw = item.get("command")
+            if (item.get("status") != "completed" or item.get("exit_code") != 0
+                    or item.get("cwd") != repo_cwd
+                    or not isinstance(raw, list) or len(raw) != 3
+                    or raw[:2] != ["/bin/bash", "-lc"] or not isinstance(raw[2], str)):
+                raise ValueError("selected writer command failed or used another checkout")
+            shell = raw[2]
+            # A simple command only: no shell expansion, pipelines or echo spoof.
+            if any(token in shell for token in (";", "&&", "||", "|", "`", "$(", "\n")):
+                raise ValueError("selected writer command is compound")
+            return shlex.split(shell)
+
+        commit_tokens = command(commit_item)
+        sha_tokens = command(sha_item)
+        if (commit_tokens[:4] != ["git", "-c", "core.abbrev=40", "commit"]
+                or "--dry-run" in commit_tokens
+                or sha_tokens != ["git", "rev-parse", "HEAD"]):
+            raise ValueError("selected writer commands are not commit and exact SHA observation")
+        commit_line = str(commit_item.get("stdout", "")).splitlines()
+        match = re.fullmatch(r"\[([^ ]+) ([0-9a-f]{40})\].*", commit_line[0]) if commit_line else None
+        if (not match or match.group(1) != branch or match.group(2) != expected_sha
+                or str(sha_item.get("stdout", "")).strip() != expected_sha
+                or commit_index >= sha_index or commit_time > sha_time
+                or commit_time != _time(writer["commit_at"])
+                or sha_time != _time(writer["sha_observed_at"])
+                or commit_model != writer.get("effective_model")):
+            raise ValueError("writer session does not bind model, branch, lease and exact commit")
         return []
-    except (OSError, ValueError, TypeError, AttributeError, UnicodeError):
-        return ["writer session/provider/model could not be independently observed"]
+    except (OSError, ValueError, TypeError, AttributeError, UnicodeError, SyntaxError,
+            KeyError, IndexError):
+        return ["writer session/model/commit could not be independently observed"]
 
 
 def verify_writer_github(run: dict, expected_sha: str) -> list[str]:
@@ -765,7 +833,7 @@ def main() -> int:
         parser.error("--sha must be a 40-character lowercase commit SHA")
     run = json.loads(args.run_file.read_text(encoding="utf-8"))
     errors = evaluate(run, args.root, args.sha)
-    errors.extend(verify_writer_session(run))
+    errors.extend(verify_writer_session(run, args.sha))
     errors.extend(verify_writer_github(run, args.sha))
     errors.extend(verify_reviewer_sessions(run, args.root, args.sha))
     errors.extend(verify_changed_paths(run, args.sha))

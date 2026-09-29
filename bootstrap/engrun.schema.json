@@ -30,7 +30,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": 2
+      "const": 3
     },
     "run_id": {
       "type": "string",
@@ -200,7 +200,11 @@
         "effective_provider",
         "identity_verified",
         "session_id",
-        "github_login"
+        "github_login",
+        "commit_execution_id",
+        "sha_execution_id",
+        "commit_at",
+        "sha_observed_at"
       ],
       "properties": {
         "id": {
@@ -245,7 +249,11 @@
           "type": "boolean"
         },
         "session_id": {"type": "string", "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"},
-        "github_login": {"type": "string", "pattern": "^[A-Za-z0-9-]+$"}
+        "github_login": {"type": "string", "pattern": "^[A-Za-z0-9-]+$"},
+        "commit_execution_id": {"type": "string", "pattern": "^exec-[0-9a-f-]{36}$"},
+        "sha_execution_id": {"type": "string", "pattern": "^exec-[0-9a-f-]{36}$"},
+        "commit_at": {"type": "string", "format": "date-time"},
+        "sha_observed_at": {"type": "string", "format": "date-time"}
       }
     },
     "reviewer": {

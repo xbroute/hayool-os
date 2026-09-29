@@ -35,7 +35,7 @@ class EngineeringRunGateTests(unittest.TestCase):
         for name in ("review-1.json", "review-2.json"):
             self._write(name, {"target_sha": self.target, "read_only": True, "verdict": "PASS", "findings": []})
         self.run = {
-            "schema_version": 2,
+            "schema_version": 3,
             "run_id": "ENG-RUN-test",
             "pr_number": 9,
             "mode": "shadow",
@@ -53,6 +53,10 @@ class EngineeringRunGateTests(unittest.TestCase):
                 "lease_issued_at": "2026-09-26T18:00:00Z", "lease_expires_at": "2026-09-26T19:00:00Z",
                 "gateway": "test-gateway", "requested_provider": "test-provider", "effective_provider": "test-provider", "requested_model": "test-model", "effective_model": "test-model", "identity_verified": True,
                 "session_id": "11111111-1111-4111-8111-111111111111", "github_login": "xbroute",
+                "commit_execution_id": "exec-11111111-1111-4111-8111-111111111111",
+                "sha_execution_id": "exec-22222222-2222-4222-8222-222222222222",
+                "commit_at": "2026-09-26T18:10:00Z",
+                "sha_observed_at": "2026-09-26T18:10:01Z",
             },
             "reviewers": [
                 {"id": f"/root/review_{i}", "read_only": True, "target_sha": self.target, "verdict": "PASS",
@@ -145,10 +149,47 @@ class EngineeringRunGateTests(unittest.TestCase):
             {"type": "turn_context", "payload": {"model": "gpt-6-sol"}},
         ]
         path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
-        self.assertEqual(verify_writer_session(self.run, sessions), [])
+        # A valid-looking but unrelated old root session did not write this SHA.
+        self.assertTrue(verify_writer_session(self.run, self.target, sessions, self.root),
+                        "unrelated root session must not attest the exact commit")
+        cwd = "file://" + self.root.resolve().as_posix()
+        def execution(event_id, command, stdout):
+            return {"type": "CommandExecution", "id": event_id,
+                    "command": ["/bin/bash", "-lc", command],
+                    "cwd": cwd, "status": "completed", "exit_code": 0,
+                    "stdout": stdout}
+        rows.extend([
+            {"timestamp": "2026-09-26T18:10:00Z", "type": "event_msg",
+             "payload": {"type": "item_completed", "item": repr(execution(
+                writer["commit_execution_id"], "git -c core.abbrev=40 commit -m test",
+                f"[{self.run['branch']} {self.target}] test\n"))}},
+            {"timestamp": "2026-09-26T18:10:01Z", "type": "event_msg",
+             "payload": {"type": "item_completed", "item": repr(execution(
+                writer["sha_execution_id"], "git rev-parse HEAD", self.target + "\n"))}},
+        ])
+        path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+        self.assertEqual(verify_writer_session(self.run, self.target, sessions, self.root), [])
         writer["effective_model"] = "invented-model"
-        self.assertTrue(verify_writer_session(self.run, sessions))
+        self.assertTrue(verify_writer_session(self.run, self.target, sessions, self.root))
         writer["effective_model"] = "gpt-6-sol"
+        rows[1]["payload"]["model"] = "other-model"
+        rows.append({"type": "turn_context", "payload": {"model": "gpt-6-sol"}})
+        path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+        self.assertTrue(verify_writer_session(self.run, self.target, sessions, self.root),
+                        "a model switch after writing cannot relabel the commit model")
+        rows[1]["payload"]["model"] = "gpt-6-sol"
+        rows[2]["payload"]["item"] = repr(execution(
+            writer["commit_execution_id"], "echo git commit -m test",
+            f"[{self.run['branch']} {self.target}] test\n"))
+        path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+        self.assertTrue(verify_writer_session(self.run, self.target, sessions, self.root),
+                        "printed commit text is not a Git commit")
+        rows[2]["payload"]["item"] = repr(execution(
+            writer["commit_execution_id"], "git -c core.abbrev=40 commit -m test",
+            f"[{self.run['branch']} {self.target[:7]}] test\n"))
+        path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+        self.assertTrue(verify_writer_session(self.run, self.target, sessions, self.root),
+                        "an abbreviated commit output cannot bind the full head SHA")
         live = {
             "pulls/9": {"number": 9, "state": "open", "user": {"login": "xbroute"},
                         "head": {"sha": self.target, "ref": self.run["branch"],
