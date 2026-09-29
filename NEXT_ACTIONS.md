@@ -1,4 +1,29 @@
-# Engineering Bootstrap live next actions — 2026-09-29 UTC
+# Engineering Bootstrap live next actions after migration review — 2026-09-29 UTC
+
+**M0.0 = PENDING; M0.2 = PENDING.** An independent review of PR #7's first head found that its new ENG-RUN verifier used an object-only parser for GitHub's array-valued direct statuses endpoint. A production-parser regression failed before the fix and passed after the bounded list parser was added. Local isolated unit and gate suites pass, but the current protected-main gate still rejects trust-code changes and has the original run-SHA bug.
+
+1. Preserve PR #7's candidate repair and its evidence ledger. Its repaired head `eff292e04a6ff45d21003297d4e0f211555d218b` had real GitHub run `36558799120`, two digest-verified artifacts and two independent exact-SHA reviews. The required status and both reviewers' overall verdicts were **FAIL**, because the current main gate rejects frozen trust-code edits and still has the old SHA defect. Any later head must have fresh exact-SHA CI and reviews.
+2. Obtain explicit Owner authorization for a separately reviewed, auditable migration path and genuine non-author GitHub review. The current required status cannot pass for a PR that changes its own frozen trust code. Preserve policy 5892, PR review, strict checks, admin enforcement and no-force protections unless a specific time-bounded transition is approved. Merely removing the failed check cannot count as M0.0 evidence.
+3. After the repaired policy actually reaches protected `main`, read back main SHA, policy and protection; rerun Shadow PR #2, failure-injection PR #3 and spoof PR #6 on the new exact base; bind live run/job/artifact/status evidence and perform independent exact-SHA reviews. Only then generate a final ENG-RUN and decide M0.0. Start M0.2 only after genuine M0.0 PASS, and stop before V1.0.
+
+Slack is not an M0.0 dependency.
+
+---
+
+# Historical Engineering Bootstrap live next actions after protected-main activation — 2026-09-29 UTC
+
+**M0.0 = PENDING; M0.2 = PENDING.** PR #1 has a real non-author approval and merge; policy 5892 and the strict required trusted status are active and read back. Protected-main Shadow run `36525390832` exposed a fail-closed P1 in GitHub API SHA provenance, repeated in ENG-RUN. The `pull_request_target` API run/job/artifact head is the PR candidate, while runner `GITHUB_SHA` is the main policy SHA. The current main gate cannot PASS, and ADR-034 forbids silently changing trust code through an ordinary M0 PR. PR #6's spoof workflow was server-blocked with zero jobs, and PR #3's kill-switch injection failed, but neither substitutes for a successful repaired Shadow run.
+
+1. Freeze a narrow ADR-035 trust-migration PR with the real-shaped pre/post regression, corrected run/PR/workflow/artifact/status bindings, unchanged isolation and active server policy, local isolated test evidence, and two independent read-only exact-SHA reviews. Keep it unmerged while the current required status fails.
+2. Obtain a separately explicit human decision on a one-time auditable recovery procedure for this broken required gate. Preserve genuine PR/non-author review, no direct or force push, active policy 5892 and recorded before/after protection readbacks. No self-attested success or AI vote may override the current hard failure. Do not execute a protection exception without that decision.
+3. After an approved migration merge, read back the new main/policy/check SHAs and settings. Retarget and retrigger Shadow PR #2, failure-injection PR #3 and spoof PR #6 on the new main, verify exact run/job/artifact/status identities, attack workflow zero-job suppression and merge blocks. Any new head needs new exact-SHA evidence.
+4. Only with no open P0/P1, real protected-main Shadow PASS, attack FAIL, independent exact-SHA reviews and a final schema-v3 ENG-RUN PASS may M0.0 be marked PASS. Update state/evidence through a protected PR. Then start M0.2 on the exact resulting main SHA and stop before V1.0.
+
+Slack is not an M0.0 dependency. Planned product pins remain uninstalled. No product feature or deployment is authorized.
+
+---
+
+# Historical Engineering Bootstrap next actions before protected-main activation — 2026-09-29 UTC
 
 **M0.0 and M0.2 remain PENDING.** The ADR-034 writer session/whole-command repairs and their pre/post regressions are recorded; candidate GitHub CI, Shadow PR #2, failing injection PR #3 and independent read-only reviews are tracked by exact SHA in the [PR #1 ledger](https://github.com/xbroute/hayool-os/pull/1#issuecomment-5849944631) and [PR #2 ledger](https://github.com/xbroute/hayool-os/pull/2#issuecomment-5849945980). Before relying on any result, compare its base/head with the live PR; a documentation edit that changes the head requires fresh CI, two reviews and branch reruns. An incomplete ENG-RUN preflight is PENDING, never a final PASS. No V1.0 feature or Slack work is authorized.
 
