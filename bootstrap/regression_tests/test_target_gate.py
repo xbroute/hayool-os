@@ -51,6 +51,7 @@ def target_client():
     }
     report = json.loads(__import__("zipfile").ZipFile(__import__("io").BytesIO(client.archive)).read("baseline.json"))
     report["policy_source"] = "base"
+    report["traceability_source"] = "head_commit_message"
     from bootstrap.regression_tests.test_trusted_gate import zipped
     client.archive = zipped(report)
     client.responses[f"repos/{REPO}/actions/runs/{TRUSTED_RUN_ID}/artifacts?per_page=100"] = {

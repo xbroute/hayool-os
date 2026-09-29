@@ -1,4 +1,12 @@
-# Engineering Bootstrap next actions — 2026-09-28 UTC
+# Engineering Bootstrap live next actions — 2026-09-29 UTC
+
+**M0.0 and M0.2 remain PENDING.** Finish the ADR-034 repair on PR #1: freeze the head with SHA-bound traceability, post-seed M0 change allowlist and external-session review consistency check; verify local pre/post exploit regressions, actual GitHub CI/artifact and two new independent read-only reviews on that exact head. Rebase and rerun harmless Shadow PR #2 and failing injection PR #3, update both evidence ledgers and prepare a non-PASS ENG-RUN candidate. No V1.0 feature or Slack work is authorized.
+
+Then a genuine GitHub collaborator other than PR author `xbroute` must inspect the final SHA, approve and merge PR #1 under current protection. After that human action, read back `main`, activate/read back Actions policy 5892, switch/read back the required strict exact-head trusted status, and run the protected-main Shadow and workflow-spoof attack. Only live passing evidence with no open P0/P1 permits final ENG-RUN and M0.0 PASS. Only after that may M0.2 start. The older queue below is retained as dated history where its ADR/check details differ.
+
+---
+
+# Historical Engineering Bootstrap next actions — 2026-09-28 UTC
 
 Current gate: **M0.0 PENDING; M0.2 PENDING.** The only permitted implementation scope remains Engineering Bootstrap, with no V1.0 product feature. Slack is not an M0.0 dependency.
 

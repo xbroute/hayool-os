@@ -1,4 +1,16 @@
-# Engineering evidence update — 2026-09-28 UTC
+# Engineering evidence live update — 2026-09-29 UTC
+
+**M0.0 = PENDING; M0.2 = PENDING.** Exact-head GitHub run IDs, artifact digests and new review records are maintained in the [PR #1 ledger](https://github.com/xbroute/hayool-os/pull/1#issuecomment-5849944631) and [Shadow PR #2 ledger](https://github.com/xbroute/hayool-os/pull/2#issuecomment-5849945980), so a later evidence entry does not change the reviewed commit SHA. Entries below are dated history where they refer to earlier heads or ADR-033.
+
+| ID | Observed evidence | Limit |
+|---|---|---|
+| EVID-ENG-SEC-8b46 | Independent read-only Security review, actual `openai/gpt-6-sol`, on `8b46f653f7f2b3f51e268571d67a8066668ba01a` found P1 mutable PR-body race, P1 added-test/import poison and P1 forged reviewer report; it also recorded the operational unactivated-policy P1. Engineering review on the same SHA found no additional code P1 but did not close Security's findings. | These reports are **FAIL for 8b46**, not reviews of the repaired head. Fresh exact-head reviews are required. |
+| EVID-ENG-REG-20260929 | Restricted-container tests first failed as expected on the old code: invalid mutable PR body, added `test_000_poison.py`, `bootstrap/__init__.py`, and root `datetime.py` were not blocked. The disposable old loader printed `OLD_SUITE_FAILURE_MASKED`. ENG-RUN's CLI accepted two writer-created PASS review files and printed `decision=PASS` in the pre-repair regression. After repair, the three new gate regressions and 26 candidate unit tests passed locally; the forged-review CLI returned FAIL. | Local reproducibility and code repair evidence. The post-repair GitHub runs and agent reviews must bind the final SHA; local session files are unsigned. |
+| EVID-ENG-ARCH-034 | ADR-034 supersedes ADR-033, retains its two-job protected-main/event-policy plan, binds hard traceability to the head commit, freezes post-seed M0 executable/test paths and adds local reviewer-session consistency checks. | Repository Actions policy 5892 is still disabled and `main` lacks the trusted workflow. Independent human approval/merge, active-policy/status readbacks and real attack proof remain required. |
+
+---
+
+# Historical Engineering evidence update — 2026-09-28 UTC
 
 | ID | Current observation | Acceptance limit |
 |---|---|---|

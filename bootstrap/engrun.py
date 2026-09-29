@@ -1,7 +1,8 @@
 """Small, fail-closed evaluator for a shadow Engineering Run.
 
-The CLI reads GitHub CI state and Git history; it never writes the repository,
-calls a model, merges, or deploys. Pure evaluate() checks evidence structure.
+The CLI reads GitHub CI state, independent local reviewer sessions and Git
+history; it never writes the repository, calls a model, merges, or deploys.
+Pure evaluate() checks structure only and must never be reported as a PASS.
 """
 
 from __future__ import annotations
@@ -17,6 +18,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SHA = re.compile(r"^[0-9a-f]{40}$")
+SESSION_ID = re.compile(r"^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$")
+REVIEW_SESSION_ROOT = Path("/mnt/c/Users/erfan/.codex/sessions")
+MAX_REVIEW_SESSION_BYTES = 32 * 1024 * 1024
 REQUIRED_CHECKS = frozenset(
     {"source_integrity", "unit", "security", "dependencies", "licenses", "secrets", "test_integrity", "traceability", "ci"}
 )
@@ -126,6 +130,10 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
     require(isinstance(reviewers, list) and len(reviewers) >= 2, "two independent reviewers required")
     ids = [writer.get("id")] + [r.get("id") for r in reviewers if isinstance(r, dict)]
     require(len(ids) == len(set(ids)) and all(ids), "writer/reviewer identities overlap")
+    session_ids = [r.get("session_id") for r in reviewers if isinstance(r, dict)]
+    require(all(isinstance(value, str) and value for value in session_ids)
+            and len(session_ids) == len(set(str(value) for value in session_ids)),
+            "reviewer sessions missing or reused")
     for index, review in enumerate(reviewers):
         if not isinstance(review, dict):
             errors.append(f"reviewer {index} invalid")
@@ -133,6 +141,12 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
         require(review.get("read_only") is True and review.get("verdict") == "PASS", f"reviewer {index} did not pass read-only")
         require(review.get("target_sha") == expected_sha, f"reviewer {index} stale SHA")
         require(all(review.get(k) for k in ("gateway", "requested_provider", "effective_provider", "requested_model", "effective_model")) and review.get("identity_verified") is True, f"reviewer {index} identity disclosure missing")
+        require(bool(SESSION_ID.fullmatch(str(review.get("session_id", ""))))
+                and review.get("agent_path") == review.get("id")
+                and str(review.get("agent_path", "")).startswith("/root/review_")
+                and isinstance(review.get("response_item_id"), str)
+                and review["response_item_id"].startswith("msg_"),
+                f"reviewer {index} external session binding missing")
         require(_evidence(root, str(review.get("report_path", "")), str(review.get("report_sha256", ""))), f"reviewer {index} report missing or changed")
         try:
             review_path = (root / str(review.get("report_path", ""))).resolve()
@@ -358,6 +372,7 @@ def verify_protected_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
             and baseline.get("base_sha") == run.get("base_sha")
             and baseline.get("target_sha") == expected_sha
             and baseline.get("policy_source") == "base"
+            and baseline.get("traceability_source") == "head_commit_message"
             and baseline.get("workspace_clean") is True
             and set(baseline.get("checks", {})) == expected_checks
             and all(baseline["checks"][name] == "PASS" for name in expected_checks)
@@ -551,6 +566,110 @@ def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
         return ["GitHub CI could not be verified through the Actions API"]
 
 
+def verify_reviewer_sessions(run: dict, root: Path, expected_sha: str,
+                             sessions_root: Path = REVIEW_SESSION_ROOT) -> list[str]:
+    """Match each review byte-for-byte to an independent Codex final answer.
+
+    This is a local app transcript consistency check, not a signed identity
+    proof. The session root is fixed by this trusted evaluator, never by a PR
+    or ENG-RUN field; PR test containers cannot read it.
+    """
+    errors: list[str] = []
+    reviewers = run.get("reviewers")
+    if not isinstance(reviewers, list) or len(reviewers) < 2:
+        return ["independent reviewer sessions absent"]
+    try:
+        trusted_root = sessions_root.resolve(strict=True)
+        evidence_root = root.resolve(strict=True)
+    except OSError:
+        return ["trusted reviewer session or evidence root unavailable"]
+    parent_ids: set[str] = set()
+    seen_sessions: set[str] = set()
+    seen_agents: set[str] = set()
+    for index, review in enumerate(reviewers):
+        if not isinstance(review, dict):
+            errors.append(f"reviewer {index} session record invalid")
+            continue
+        session_id = review.get("session_id")
+        agent_path = review.get("agent_path")
+        item_id = review.get("response_item_id")
+        if (not isinstance(session_id, str) or SESSION_ID.fullmatch(session_id) is None
+                or not isinstance(agent_path, str) or not agent_path.startswith("/root/review_")
+                or agent_path != review.get("id") or agent_path == (run.get("writer") or {}).get("id")
+                or not isinstance(item_id, str) or not item_id.startswith("msg_")
+                or session_id in seen_sessions or agent_path in seen_agents):
+            errors.append(f"reviewer {index} session identity invalid or reused")
+            continue
+        seen_sessions.add(session_id)
+        seen_agents.add(agent_path)
+        matches = list(trusted_root.glob(f"????/??/??/rollout-*-{session_id}.jsonl"))
+        if len(matches) != 1:
+            errors.append(f"reviewer {index} external session missing or ambiguous")
+            continue
+        session_path = matches[0]
+        try:
+            if session_path.is_symlink() or not session_path.resolve(strict=True).is_relative_to(trusted_root):
+                raise ValueError("session escaped trusted root")
+            if session_path.stat().st_size > MAX_REVIEW_SESSION_BYTES:
+                raise ValueError("session log exceeds limit")
+            raw = session_path.read_bytes()
+            if len(raw) > MAX_REVIEW_SESSION_BYTES:
+                raise ValueError("session log exceeds limit")
+            records = [json.loads(line) for line in raw.splitlines()]
+            if not records or records[0].get("type") != "session_meta":
+                raise ValueError("session metadata missing")
+            meta = records[0].get("payload") or {}
+            parent = meta.get("parent_thread_id")
+            provider = meta.get("model_provider")
+            if (meta.get("id") != session_id or meta.get("agent_path") != agent_path
+                    or not isinstance(parent, str) or SESSION_ID.fullmatch(parent) is None
+                    or not isinstance(provider, str) or not provider):
+                raise ValueError("reviewer metadata does not match agent identity")
+            parent_ids.add(parent)
+            model = None
+            final_matches: list[tuple[object, object]] = []
+            for record in records:
+                payload = record.get("payload") or {}
+                if record.get("type") == "turn_context":
+                    model = payload.get("model")
+                if (record.get("type") == "response_item" and payload.get("id") == item_id):
+                    if (payload.get("type") != "message" or payload.get("role") != "assistant"
+                            or payload.get("phase") != "final_answer"):
+                        raise ValueError("selected reviewer item is not a final answer")
+                    parts = payload.get("content")
+                    if (not isinstance(parts, list) or len(parts) != 1
+                            or not isinstance(parts[0], dict)
+                            or parts[0].get("type") != "output_text"):
+                        raise ValueError("reviewer final answer is not one text report")
+                    final_matches.append((model, parts[0].get("text")))
+            if len(final_matches) != 1:
+                raise ValueError("reviewer final answer missing or ambiguous")
+            effective_model, output = final_matches[0]
+            if (not isinstance(output, str) or not isinstance(effective_model, str)
+                    or review.get("effective_provider") != provider
+                    or review.get("effective_model") != effective_model):
+                raise ValueError("reviewer provider/model differs from session")
+            report_path = (evidence_root / str(review.get("report_path", ""))).resolve()
+            if not report_path.is_relative_to(evidence_root):
+                raise ValueError("review report escaped evidence root")
+            report_bytes = report_path.read_bytes()
+            if (report_bytes != output.encode("utf-8")
+                    or hashlib.sha256(report_bytes).hexdigest() != review.get("report_sha256")):
+                raise ValueError("review report differs from reviewer final answer")
+            report = json.loads(report_bytes)
+            if (not isinstance(report, dict) or report.get("target_sha") != expected_sha
+                    or report.get("read_only") is not True or report.get("verdict") != "PASS"
+                    or report.get("findings") != review.get("findings")
+                    or report.get("effective_provider") != provider
+                    or report.get("effective_model") != effective_model):
+                raise ValueError("reviewer final answer does not bind exact SHA and findings")
+        except (OSError, ValueError, TypeError, AttributeError, UnicodeError):
+            errors.append(f"reviewer {index} external session/report verification failed")
+    if len(parent_ids) != 1:
+        errors.append("reviewers do not belong to one independent task tree")
+    return errors
+
+
 def verify_changed_paths(run: dict, expected_sha: str) -> list[str]:
     try:
         actual = subprocess.check_output(
@@ -573,6 +692,7 @@ def main() -> int:
         parser.error("--sha must be a 40-character lowercase commit SHA")
     run = json.loads(args.run_file.read_text(encoding="utf-8"))
     errors = evaluate(run, args.root, args.sha)
+    errors.extend(verify_reviewer_sessions(run, args.root, args.sha))
     errors.extend(verify_changed_paths(run, args.sha))
     errors.extend(verify_github_ci(run, args.root, args.sha))
     try:

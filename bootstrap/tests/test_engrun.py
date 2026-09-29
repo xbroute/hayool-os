@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from bootstrap.engrun import REQUIRED_CHECKS, evaluate, risk_for_path, verify_changed_paths, verify_github_ci
+from bootstrap.engrun import REQUIRED_CHECKS, evaluate, main, risk_for_path, verify_changed_paths, verify_github_ci, verify_reviewer_sessions
 
 
 class EngineeringRunGateTests(unittest.TestCase):
@@ -53,9 +53,11 @@ class EngineeringRunGateTests(unittest.TestCase):
                 "gateway": "test-gateway", "requested_provider": "test-provider", "effective_provider": "test-provider", "requested_model": "test-model", "effective_model": "test-model", "identity_verified": True,
             },
             "reviewers": [
-                {"id": f"reviewer-{i}", "read_only": True, "target_sha": self.target, "verdict": "PASS",
+                {"id": f"/root/review_{i}", "read_only": True, "target_sha": self.target, "verdict": "PASS",
                  "findings": [],
                  "gateway": "test-gateway", "requested_provider": "test-provider", "effective_provider": "test-provider", "requested_model": "test-model", "effective_model": "test-model", "identity_verified": True,
+                 "session_id": f"00000000-0000-4000-8000-{i:012d}",
+                 "agent_path": f"/root/review_{i}", "response_item_id": f"msg_review_{i}",
                  "report_path": f"review-{i}.json", "report_sha256": self._hash(f"review-{i}.json")}
                 for i in (1, 2)
             ],
@@ -83,6 +85,61 @@ class EngineeringRunGateTests(unittest.TestCase):
 
     def test_structural_shadow_trace_passes_without_live_ci(self):
         self.assertEqual(evaluate(self.run, self.root, self.target), [])
+
+    def test_writer_forged_review_files_cannot_make_cli_pass(self):
+        # CI and structural checks are mocked green to isolate reviewer origin.
+        # The two JSON files in setUp are writer-created, not agent session output.
+        run_file = self.root / "run.json"
+        run_file.write_text(json.dumps(self.run), encoding="utf-8")
+        def checkout(command, **kwargs):
+            if command[-2:] == ["rev-parse", "HEAD"]:
+                return self.target + "\n"
+            if command[-1] == "--show-current":
+                return self.run["branch"] + "\n"
+            if command[-1] == "--porcelain":
+                return ""
+            raise AssertionError(command)
+        with patch("bootstrap.engrun.verify_changed_paths", return_value=[]), \
+             patch("bootstrap.engrun.verify_github_ci", return_value=[]), \
+             patch("bootstrap.engrun.subprocess.check_output", side_effect=checkout), \
+             patch.object(sys, "argv", ["engrun.py", str(run_file), "--root", str(self.root), "--sha", self.target]):
+            self.assertEqual(main(), 1)
+
+    def test_external_final_answers_bind_review_bytes_and_identity(self):
+        sessions = self.root / "external-codex-sessions"
+        day = sessions / "2026" / "09" / "29"
+        day.mkdir(parents=True)
+        for i, review in enumerate(self.run["reviewers"], start=1):
+            review["effective_provider"] = "openai"
+            review["effective_model"] = "gpt-6-sol"
+            report = {"target_sha": self.target, "read_only": True,
+                      "verdict": "PASS", "findings": [],
+                      "effective_provider": "openai", "effective_model": "gpt-6-sol"}
+            self._write(f"review-{i}.json", report)
+            review["report_sha256"] = self._hash(f"review-{i}.json")
+            entries = [
+                {"type": "session_meta", "payload": {"id": review["session_id"],
+                    "agent_path": review["agent_path"],
+                    "parent_thread_id": "11111111-1111-4111-8111-111111111111",
+                    "model_provider": "openai"}},
+                {"type": "turn_context", "payload": {"model": "gpt-6-sol"}},
+                {"type": "response_item", "payload": {"id": review["response_item_id"],
+                    "type": "message", "role": "assistant", "phase": "final_answer",
+                    "content": [{"type": "output_text", "text":
+                        (self.root / f"review-{i}.json").read_text(encoding="utf-8")}]}}
+            ]
+            path = day / f"rollout-2026-09-29T00-00-0{i}-{review['session_id']}.jsonl"
+            path.write_text("\n".join(json.dumps(row) for row in entries) + "\n", encoding="utf-8")
+        self.assertEqual(verify_reviewer_sessions(self.run, self.root, self.target, sessions), [])
+        # A writer can recalculate a local hash, but cannot make it equal the
+        # independent final answer in the external session record.
+        forged = {"target_sha": self.target, "read_only": True,
+                  "verdict": "PASS", "findings": [],
+                  "effective_provider": "openai", "effective_model": "gpt-6-sol",
+                  "writer_added": "forged approval"}
+        self._write("review-1.json", forged)
+        self.run["reviewers"][0]["report_sha256"] = self._hash("review-1.json")
+        self.assertTrue(verify_reviewer_sessions(self.run, self.root, self.target, sessions))
 
     def test_failure_injection_ai_votes_cannot_override_hard_failure(self):
         report = json.loads((self.root / "baseline.json").read_text())

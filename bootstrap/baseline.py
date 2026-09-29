@@ -179,9 +179,10 @@ def secrets() -> list[str]:
 
 def test_integrity(base_sha: str, target_sha: str) -> list[str]:
     errors: list[str] = []
-    # The initial README-only base has no gate; its bootstrap is a one-time
-    # human-reviewed exception. Once a base has the gate, no candidate can
-    # change or add workflows or trusted policy in its own PR.
+    # The README-only seed is a one-time human-reviewed exception. In M0, a
+    # protected base accepts only prose documents and harmless sample text.
+    # This freezes the whole test/import surface: a new test, package init,
+    # or import-shadow module must not poison the existing suite in its own PR.
     base_has_gate = subprocess.run(
         ["git", "cat-file", "-e", f"{base_sha}:bootstrap/trusted_gate.py"],
         cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -192,22 +193,23 @@ def test_integrity(base_sha: str, target_sha: str) -> list[str]:
         status = columns[0]
         paths = columns[1:]
         for path in paths:
-            if path.startswith(".github/workflows/") or path in {
-                "bootstrap/baseline.py", "bootstrap/trusted_gate.py",
-                "bootstrap/engrun.py", "bootstrap/engrun.schema.json",
-            }:
-                if base_has_gate:
-                    errors.append("candidate changed trusted gate or workflow: " + path)
-            elif path.startswith(("bootstrap/tests/", "bootstrap/regression_tests/", "tests/")) and not status.startswith("A"):
+            is_test = path.startswith(("bootstrap/tests/", "bootstrap/regression_tests/", "tests/"))
+            if base_has_gate:
+                if is_test:
+                    errors.append("candidate changed test after M0 seed: " + path)
+                elif not (path in {"PROJECT_STATE.md", "NEXT_ACTIONS.md", "README.md", "README_FA.md"}
+                          or (path.startswith("docs/") and path.endswith(".md"))
+                          or (path.startswith("samples/") and path.endswith(".txt"))):
+                    errors.append("candidate changed protected M0 path: " + path)
+            elif is_test and not status.startswith("A"):
                 errors.append("existing test changed or removed: " + path)
     return errors
 
 
 def traceability() -> list[str]:
-    event_path = Path(os.environ.get("GITHUB_EVENT_PATH", ""))
-    if not event_path.is_file():
-        return ["GitHub PR event missing"]
-    body = (json.loads(event_path.read_text(encoding="utf-8")).get("pull_request") or {}).get("body") or ""
+    # A PR body can be edited without changing the commit SHA. Required status
+    # is SHA-bound, so its traceability input must be immutable at that SHA.
+    body = git("show", "-s", "--format=%B", "HEAD")
     required = {
         "REQ": r"REQ-[A-Z]+-[0-9]+",
         "ADR": r"ADR-[0-9]+",
@@ -216,7 +218,7 @@ def traceability() -> list[str]:
         "Evidence": r"\S+",
         "Migration": r"\S+",
     }
-    return ["PR body missing " + label for label, pattern in required.items() if not re.search(r"(?im)^" + label + r":\s*" + pattern, body)]
+    return ["head commit missing " + label for label, pattern in required.items() if not re.search(r"(?im)^" + label + r":\s*" + pattern, body)]
 
 
 def unit() -> list[str]:
@@ -333,7 +335,7 @@ def main() -> int:
     }
     details = {name: function() for name, function in functions.items()}
     checks = {name: "PASS" if not errors else "FAIL" for name, errors in details.items()}
-    report = {"schema_version": 1, "policy_source": os.environ.get("HAYOOL_POLICY_SOURCE", "local-unverified"), "base_sha": args.base_sha, "target_sha": target_sha, "workspace_clean": clean, "checks": checks, "errors": details}
+    report = {"schema_version": 1, "policy_source": os.environ.get("HAYOOL_POLICY_SOURCE", "local-unverified"), "traceability_source": "head_commit_message", "base_sha": args.base_sha, "target_sha": target_sha, "workspace_clean": clean, "checks": checks, "errors": details}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({"target_sha": target_sha, "workspace_clean": clean, "checks": checks}, sort_keys=True))

@@ -2,7 +2,7 @@ name: engineering-trusted-gate
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review, edited]
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
 
 permissions: {}

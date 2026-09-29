@@ -258,6 +258,9 @@
         "requested_provider",
         "effective_provider",
         "identity_verified",
+        "session_id",
+        "agent_path",
+        "response_item_id",
         "findings"
       ],
       "properties": {
@@ -307,6 +310,9 @@
         "identity_verified": {
           "type": "boolean"
         },
+        "session_id": {"type": "string", "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"},
+        "agent_path": {"type": "string", "pattern": "^/root/review_"},
+        "response_item_id": {"type": "string", "pattern": "^msg_"},
         "findings": {
           "type": "array",
           "items": {"$ref": "#/$defs/finding"}

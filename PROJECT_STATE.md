@@ -1,4 +1,16 @@
-# Engineering Bootstrap status — 2026-09-28 UTC
+# Engineering Bootstrap live status — 2026-09-29 UTC
+
+**M0.0 = PENDING; M0.2 = PENDING.** The protected default `main` is still the README-only SHA `138bdb78530403bac8407738c05fe033514a7838`; the V7.2 import and bootstrap code remain on PR #1. PR #1 author is `xbroute`, also the Owner account, so it cannot provide the non-author approval. No human reviewer or merge is recorded. No V1.0 product code, deployment or production credential is in scope.
+
+The new ADR-034 supersedes ADR-033 after the read-only security review of PR #1 SHA `8b46f653f7f2b3f51e268571d67a8066668ba01a` found three code/assurance P1s: mutable PR-body traceability at a fixed SHA, candidate-added test/import poisoning, and writer-created AI review reports accepted by ENG-RUN. Disposable regressions reproduced all three before repair: the first two produced four expected failures in the restricted container; the forged-review CLI returned a false PASS. The current branch changes the hard trace to the head commit, freezes executable/test paths for post-seed M0 PRs, and requires byte-for-byte review output from distinct local Codex sessions before ENG-RUN CLI can pass. The new regressions passed locally after repair. Local session logs are unsigned and host-writable, so this is consistency evidence, not a cryptographic reviewer signature. The exact reviewed SHA and live GitHub CI after this repair are maintained in the [PR #1 evidence ledger](https://github.com/xbroute/hayool-os/pull/1#issuecomment-5849944631); earlier results do not prove the repaired head.
+
+GitHub Actions policy `5892` is configured **disabled** for all workflow paths and only `pull_request_target`. Current branch protection requires one non-author approval and strict `engineering-baseline` from GitHub Actions App ID 15368; that check is PR-controlled for the seed. The protected-main gate, its exact-head required status and the real workflow-spoof attack remain unverified until an independent human approves and merges PR #1, after which the policy and required status must be activated and read back. The original V7.2 ZIP, 194 REQs, 31 original ADRs and owner decisions are preserved; ADR-034 is an additive engineering decision, not a product requirement change. Slack is not an M0 dependency.
+
+The [Shadow PR #2 ledger](https://github.com/xbroute/hayool-os/pull/2#issuecomment-5849945980) and draft injection PR #3 record candidate CI and hard-failure evidence on their exact heads. After the new bootstrap SHA is frozen, both must be rebased and rerun. A final ENG-RUN cannot pass without a successful protected-main run, active server policy, exact status, independent reviews and non-author merge. M0.2 and V1.0 remain unstarted.
+
+---
+
+# Historical Engineering Bootstrap status — 2026-09-28 UTC
 
 **M0.0 = PENDING; M0.2 = PENDING.** The current protected `main` remains the README-only SHA `138bdb78530403bac8407738c05fe033514a7838`. PR #1 is authored by GitHub identity `xbroute`; that same account cannot supply the required non-author approval. No human reviewer has been identified, and no M0 merge has occurred. No V1.0 product feature is authorized or implemented.
 

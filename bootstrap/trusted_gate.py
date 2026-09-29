@@ -379,6 +379,7 @@ def evaluate_pr_target(event: dict[str, object], repo: str, policy_sha: str,
     demand(hashlib.sha256(archive).hexdigest() == digest[7:], "protected artifact digest mismatch")
     baseline, baseline_sha256 = artifact_report(archive)
     demand(baseline.get("schema_version") == 1 and baseline.get("policy_source") == "base"
+           and baseline.get("traceability_source") == "head_commit_message"
            and baseline.get("base_sha") == policy_sha
            and baseline.get("target_sha") == head_sha
            and baseline.get("workspace_clean") is True,
