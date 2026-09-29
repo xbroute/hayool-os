@@ -34,7 +34,7 @@ jobs:
         run: python3 -I policy/bootstrap/baseline.py --base-sha "$BASE_SHA" --target-sha "$TARGET_SHA" --output "$RUNNER_TEMP/baseline.json"
       - name: Preserve candidate-check evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4, resolved 2026-09-26
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4, resolved 2026-09-26
         with:
           name: engineering-protected-baseline-${{ github.event.pull_request.head.sha }}
           path: ${{ runner.temp }}/baseline.json
@@ -69,7 +69,7 @@ jobs:
       - name: Preserve trusted-gate evidence
         id: preserve_gate
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4, resolved 2026-09-26
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4, resolved 2026-09-26
         with:
           name: engineering-trusted-gate-${{ github.run_id }}
           path: ${{ runner.temp }}/trusted-gate.json
