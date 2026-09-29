@@ -12,7 +12,6 @@ import ast
 import hashlib
 import json
 import re
-import shlex
 import subprocess
 import sys
 import tempfile
@@ -644,7 +643,7 @@ def verify_writer_session(run: dict, expected_sha: str,
         if not isinstance(branch, str) or not SHA.fullmatch(expected_sha):
             raise ValueError("branch or SHA invalid")
 
-        def command(item: dict) -> list[str]:
+        def command(item: dict) -> str:
             raw = item.get("command")
             if (item.get("status") != "completed" or item.get("exit_code") != 0
                     or item.get("cwd") != repo_cwd
@@ -652,16 +651,16 @@ def verify_writer_session(run: dict, expected_sha: str,
                     or raw[:2] != ["/bin/bash", "-lc"] or not isinstance(raw[2], str)):
                 raise ValueError("selected writer command failed or used another checkout")
             shell = raw[2]
-            # A simple command only: no shell expansion, pipelines or echo spoof.
-            if any(token in shell for token in (";", "&&", "||", "|", "`", "$(", "\n")):
-                raise ValueError("selected writer command is compound")
-            return shlex.split(shell)
+            return shell
 
-        commit_tokens = command(commit_item)
-        sha_tokens = command(sha_item)
-        if (commit_tokens[:4] != ["git", "-c", "core.abbrev=40", "commit"]
-                or "--dry-run" in commit_tokens
-                or sha_tokens != ["git", "rev-parse", "HEAD"]):
+        commit_shell = command(commit_item)
+        sha_shell = command(sha_item)
+        # Restrict the whole shell line, not just its leading Git tokens.
+        # Otherwise a failed commit followed by printf could forge stdout.
+        if (not re.fullmatch(
+                    r"git -c core\.abbrev=40 commit (?:-F /tmp/[A-Za-z0-9._-]+|--amend --no-edit)",
+                    commit_shell)
+                or sha_shell != "git rev-parse HEAD"):
             raise ValueError("selected writer commands are not commit and exact SHA observation")
         commit_line = str(commit_item.get("stdout", "")).splitlines()
         match = re.fullmatch(r"\[([^ ]+) ([0-9a-f]{40})\].*", commit_line[0]) if commit_line else None

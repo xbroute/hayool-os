@@ -161,7 +161,7 @@ class EngineeringRunGateTests(unittest.TestCase):
         rows.extend([
             {"timestamp": "2026-09-26T18:10:00Z", "type": "event_msg",
              "payload": {"type": "item_completed", "item": repr(execution(
-                writer["commit_execution_id"], "git -c core.abbrev=40 commit -m test",
+                writer["commit_execution_id"], "git -c core.abbrev=40 commit -F /tmp/test-message.txt",
                 f"[{self.run['branch']} {self.target}] test\n"))}},
             {"timestamp": "2026-09-26T18:10:01Z", "type": "event_msg",
              "payload": {"type": "item_completed", "item": repr(execution(
@@ -185,11 +185,18 @@ class EngineeringRunGateTests(unittest.TestCase):
         self.assertTrue(verify_writer_session(self.run, self.target, sessions, self.root),
                         "printed commit text is not a Git commit")
         rows[2]["payload"]["item"] = repr(execution(
-            writer["commit_execution_id"], "git -c core.abbrev=40 commit -m test",
+            writer["commit_execution_id"], "git -c core.abbrev=40 commit -F /tmp/test-message.txt",
             f"[{self.run['branch']} {self.target[:7]}] test\n"))
         path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
         self.assertTrue(verify_writer_session(self.run, self.target, sessions, self.root),
                         "an abbreviated commit output cannot bind the full head SHA")
+        rows[2]["payload"]["item"] = repr(execution(
+            writer["commit_execution_id"],
+            "git -c core.abbrev=40 commit --invalid-option >/dev/null 2>&1 & printf fake",
+            f"[{self.run['branch']} {self.target}] fake\n"))
+        path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+        self.assertTrue(verify_writer_session(self.run, self.target, sessions, self.root),
+                        "a shell command with a fake successful tail cannot attest Git commit")
         live = {
             "pulls/9": {"number": 9, "state": "open", "user": {"login": "xbroute"},
                         "head": {"sha": self.target, "ref": self.run["branch"],
