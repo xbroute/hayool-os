@@ -1,0 +1,2859 @@
+{
+  "schema": "hayool.requirements.v1",
+  "version": "7.2",
+  "generated_from": "docs/requirements/REQUIREMENTS_CATALOG.md",
+  "count": 194,
+  "original_v71_ids_preserved": 138,
+  "inheritance": [
+    "docs/architecture/DOMAIN_CONTRACTS.md",
+    "docs/testing/TESTING_STRATEGY.md",
+    "docs/requirements/SOURCE_COVERAGE.md",
+    "docs/requirements/GRANULARITY_REVIEW.md"
+  ],
+  "records": [
+    {
+      "id": "REQ-GOV-001",
+      "test_contract_id": "TEST-REQ-GOV-001",
+      "family": "Governance and engineering",
+      "requirement": "Maintain versioned authority, conflict ledger, source coverage, decisions and claims; never promote an inherited assertion to fact.",
+      "acceptance": "Change trace to original and approval; stale claim rejected (AUTO).",
+      "test_suites": [
+        "AUTO"
+      ],
+      "release_target": "M0.1",
+      "source": "V7/01,09; M§0",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GOV-002",
+      "test_contract_id": "TEST-REQ-GOV-002",
+      "family": "Governance and engineering",
+      "requirement": "Carry independent readiness states for specified/design/code/test/security/a11y/staging/jurisdiction/market/production/deploy.",
+      "acceptance": "Missing evidence remains pending (AUTO).",
+      "test_suites": [
+        "AUTO"
+      ],
+      "release_target": "M0.1",
+      "source": "V7/09,14",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GOV-003",
+      "test_contract_id": "TEST-REQ-GOV-003",
+      "family": "Governance and engineering",
+      "requirement": "Require owner signature for irreversible legal/commercial/capital/market policy; technical ADR cannot grant it.",
+      "acceptance": "Unauthorized activation blocked (AUTO,POL).",
+      "test_suites": [
+        "AUTO",
+        "POL"
+      ],
+      "release_target": "M0.1",
+      "source": "V7/09",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GOV-004",
+      "test_contract_id": "TEST-REQ-GOV-004",
+      "family": "Governance and engineering",
+      "requirement": "Bind each implementation PR to REQ, ADR, test, migration, risk and evidence links.",
+      "acceptance": "Untraceable PR fails gate (AUTO).",
+      "test_suites": [
+        "AUTO"
+      ],
+      "release_target": "M0.0",
+      "source": "V7/03,09",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GOV-005",
+      "test_contract_id": "TEST-REQ-GOV-005",
+      "family": "Governance and engineering",
+      "requirement": "Use protected repo, isolated writer, read-only independent reviews and exact SHA checks.",
+      "acceptance": "Stale SHA or reviewer write stops merge (AUTO).",
+      "test_suites": [
+        "AUTO"
+      ],
+      "release_target": "M0.0",
+      "source": "V7/03; M§61",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GOV-006",
+      "test_contract_id": "TEST-REQ-GOV-006",
+      "family": "Governance and engineering",
+      "requirement": "Bound repair iterations, time and cost; preserve failing tests and secrets; support kill switch.",
+      "acceptance": "Seeded budget/secret/test violation halts (AUTO).",
+      "test_suites": [
+        "AUTO"
+      ],
+      "release_target": "M0.0",
+      "source": "V7/03; M§61",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GOV-007",
+      "test_contract_id": "TEST-REQ-GOV-007",
+      "family": "Governance and engineering",
+      "requirement": "Validate one shadow PR end to end before autonomous merge/deploy authority.",
+      "acceptance": "Full ENG-RUN trace; no product action without gate (AUTO).",
+      "test_suites": [
+        "AUTO"
+      ],
+      "release_target": "M0.0",
+      "source": "V7/03",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GOV-008",
+      "test_contract_id": "TEST-REQ-GOV-008",
+      "family": "Governance and engineering",
+      "requirement": "Monitor dependencies, CVEs, provider/model/terms, jurisdiction sources and compatibility; propose reviewable changes only.",
+      "acceptance": "Changed term opens candidate, no live policy drift (AUTO).",
+      "test_suites": [
+        "AUTO"
+      ],
+      "release_target": "M0.0, ongoing",
+      "source": "V7/03",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GOV-009",
+      "test_contract_id": "TEST-REQ-GOV-009",
+      "family": "Governance and engineering",
+      "requirement": "Conduct exact repository-SHA architecture/REQ/ADR/guardrail review and close blockers.",
+      "acceptance": "Independent review on same SHA; M0.2 pass only then (AUTO).",
+      "test_suites": [
+        "AUTO"
+      ],
+      "release_target": "M0.2",
+      "source": "V7/03,14",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GOV-010",
+      "test_contract_id": "TEST-REQ-GOV-010",
+      "family": "Governance and engineering",
+      "requirement": "Preserve threat/risk/decision/evidence provenance and revalidate on affected change.",
+      "acceptance": "Expired proof cannot pass release (AUTO).",
+      "test_suites": [
+        "AUTO"
+      ],
+      "release_target": "all",
+      "source": "V7/09,14",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-001",
+      "test_contract_id": "TEST-REQ-PLAT-001",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Model tenant and actor/service/app identities, memberships, roles and scoped delegation.",
+      "acceptance": "Cross-tenant/expired delegated action denied (TEN,AUTH).",
+      "test_suites": [
+        "TEN",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§4,8",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-002",
+      "test_contract_id": "TEST-REQ-PLAT-002",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Authenticate with secure sessions/MFA for privileged roles, recovery and revocation.",
+      "acceptance": "Revoked session/action denied (AUTH).",
+      "test_suites": [
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§8,54",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-003",
+      "test_contract_id": "TEST-REQ-PLAT-003",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Enforce application auth plus composite tenant foreign keys and FORCE RLS with non-bypass runtime role.",
+      "acceptance": "A cannot read/write B even via FK/SQL (TEN).",
+      "test_suites": [
+        "TEN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§8,54; V7/04",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-004",
+      "test_contract_id": "TEST-REQ-PLAT-004",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Derive transaction-scoped tenant context from verified membership; reset on pooled connection.",
+      "acceptance": "Absent/stale context denies access (TEN).",
+      "test_suites": [
+        "TEN"
+      ],
+      "release_target": "V1.0",
+      "source": "V7/04",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-005",
+      "test_contract_id": "TEST-REQ-PLAT-005",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Apply isolation to jobs, cache, object grants, search, counts, snippets, RAG, analytics, realtime, export, logs and restore.",
+      "acceptance": "Side channel yields no B existence (TEN).",
+      "test_suites": [
+        "TEN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§53,54,73; V7/04",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-006",
+      "test_contract_id": "TEST-REQ-PLAT-006",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Enforce field/action/row scopes before search or AI and recheck current access on download.",
+      "acceptance": "Consent/membership revocation immediate (AUTH,TEN).",
+      "test_suites": [
+        "AUTH",
+        "TEN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§8,42,53",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-007",
+      "test_contract_id": "TEST-REQ-PLAT-007",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Keep global authentication subject minimal; private tenant HR/contact data stays tenant-owned.",
+      "acceptance": "Dual-membership has no implicit cross-tenant join (TEN).",
+      "test_suites": [
+        "TEN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§8,10",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-008",
+      "test_contract_id": "TEST-REQ-PLAT-008",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Support Cloud, Dedicated and On-Prem deployment with same contracts and isolated administration.",
+      "acceptance": "Mode-specific isolation/upgrade/export (OPS,TEN).",
+      "test_suites": [
+        "OPS",
+        "TEN"
+      ],
+      "release_target": "V1.9",
+      "source": "M§7,59",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-009",
+      "test_contract_id": "TEST-REQ-PLAT-009",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Provide signed offline license with explicit grace/read-only/export semantics, not data destruction on expiry.",
+      "acceptance": "Renewal after expiry recovers data (OPS).",
+      "test_suites": [
+        "OPS"
+      ],
+      "release_target": "V1.9",
+      "source": "M§57,59",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-010",
+      "test_contract_id": "TEST-REQ-PLAT-010",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Provision tenant, verified domain, scoped admin, entitlement and onboarding workflow without privilege bleed.",
+      "acceptance": "Second tenant starts independent journey (GJ-02,AUTH).",
+      "test_suites": [
+        "GJ-02",
+        "AUTH"
+      ],
+      "release_target": "V1.1",
+      "source": "M§74,75",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-011",
+      "test_contract_id": "TEST-REQ-PLAT-011",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Version plans, entitlements, usage and restrictions centrally; reconcile feature grants to contracted plan.",
+      "acceptance": "Expiry/retry cannot create unauthorized grant (AUTH,FIN).",
+      "test_suites": [
+        "AUTH",
+        "FIN"
+      ],
+      "release_target": "V1.6",
+      "source": "M§57,74",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-012",
+      "test_contract_id": "TEST-REQ-PLAT-012",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Provide backup and point-in-time compatible restore across transactional, blob, config and privacy tombstone state.",
+      "acceptance": "Restore meets declared RPO/RTO profile and reconciles ledger/rights (OPS,DATA).",
+      "test_suites": [
+        "OPS",
+        "DATA"
+      ],
+      "release_target": "V1.0",
+      "source": "M§56,59",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-013",
+      "test_contract_id": "TEST-REQ-PLAT-013",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Govern master party/item/resource identifiers, deduplication candidates, reference-data lineage and reversible merge/unmerge.",
+      "acceptance": "Duplicate import resolves without lost links; conflicting source produces review and provenance (DATA,TEN).",
+      "test_suites": [
+        "DATA",
+        "TEN"
+      ],
+      "release_target": "V1.1",
+      "source": "M§104",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-014",
+      "test_contract_id": "TEST-REQ-PLAT-014",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Tenant branding covers verified domain, login, theme presets, favicon and approved document/email templates with accessible fallback.",
+      "acceptance": "Tenant A's mark never appears in B's portal/email; broken theme falls back (UX,TEN).",
+      "test_suites": [
+        "UX",
+        "TEN"
+      ],
+      "release_target": "V1.1",
+      "source": "M§75",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-015",
+      "test_contract_id": "TEST-REQ-PLAT-015",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Support/operations access is separately granted with reason, limited entity/field scope, expiry, recording and revocation.",
+      "acceptance": "Expired/revoked support principal cannot view tenant data or derived export (AUTH,TEN).",
+      "test_suites": [
+        "AUTH",
+        "TEN"
+      ],
+      "release_target": "V1.1",
+      "source": "M§8,56",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-016",
+      "test_contract_id": "TEST-REQ-PLAT-016",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Versioned application/schema upgrade uses migration plan, staged rollout, compatibility test and rollback/forward repair.",
+      "acceptance": "GJ-02 upgrade preserves finance, permissions, custom schema and restored tenant data (OPS,EXT).",
+      "test_suites": [
+        "OPS",
+        "EXT"
+      ],
+      "release_target": "V1.1",
+      "source": "M§59",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-017",
+      "test_contract_id": "TEST-REQ-PLAT-017",
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Organization owns effective-dated legal entities, branches, departments and teams with lawful scoped membership, separate from financial center ownership.",
+      "acceptance": "Reparented team cannot gain cross-entity data or retroactively rewrite budget/ledger (TEN,AUTH).",
+      "test_suites": [
+        "TEN",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§4",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-PLAT-018",
+      "test_contract_id": "TEST-REQ-PLAT-018",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "Identity, tenancy, permission and operations",
+      "requirement": "Independently monitor service health and operational telemetry across API, workflows, providers, queues, storage, financial side effects and backup; redact sensitive context and keep local diagnostics in On-Prem mode.",
+      "acceptance": "Fault injection triggers scoped readiness/lag/dead-letter/backup-age alerts and correlated redacted traces without secret or other-tenant disclosure (OPS,SEC).",
+      "test_suites": [
+        "OPS",
+        "SEC"
+      ],
+      "release_target": "V1.0",
+      "source": "M§56,59; V7/04"
+    },
+    {
+      "id": "REQ-WRK-001",
+      "test_contract_id": "TEST-REQ-WRK-001",
+      "family": "Work, clients and collaboration",
+      "requirement": "Capture discovery, client need and source-backed requirements with draft/approved distinction.",
+      "acceptance": "GJ-01A scope links sources; conflicting input opens revision (WORK).",
+      "test_suites": [
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§16,26",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-002",
+      "test_contract_id": "TEST-REQ-WRK-002",
+      "family": "Work, clients and collaboration",
+      "requirement": "Version scope, assumptions, change requests, acceptance and client signoff.",
+      "acceptance": "Changed work cannot inherit stale acceptance (WORK).",
+      "test_suites": [
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§15,16",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-003",
+      "test_contract_id": "TEST-REQ-WRK-003",
+      "family": "Work, clients and collaboration",
+      "requirement": "Represent goal, capability, project, work unit, dependency, owner and auditable state in Work Graph.",
+      "acceptance": "Cyclic dependency denied, accepted outcome traced (WORK).",
+      "test_suites": [
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§4,15",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-004",
+      "test_contract_id": "TEST-REQ-WRK-004",
+      "family": "Work, clients and collaboration",
+      "requirement": "Estimate and quote approved scope with versioned price/rule/currency snapshot and expiry.",
+      "acceptance": "Recompute original quote; edited estimate requires new approval (WORK,FIN).",
+      "test_suites": [
+        "WORK",
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§19,27",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-005",
+      "test_contract_id": "TEST-REQ-WRK-005",
+      "family": "Work, clients and collaboration",
+      "requirement": "Distinguish tracked/submitted/approved/billable/payable time with calendar and overlap rules.",
+      "acceptance": "Only approved quantities feed invoice/payroll (WORK,FIN).",
+      "test_suites": [
+        "WORK",
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§17",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-006",
+      "test_contract_id": "TEST-REQ-WRK-006",
+      "family": "Work, clients and collaboration",
+      "requirement": "Reserve capacity with calendar/time zone/leave and atomic competing requests.",
+      "acceptance": "Infeasible plan explained; no double allocation (WORK).",
+      "test_suites": [
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§18",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-007",
+      "test_contract_id": "TEST-REQ-WRK-007",
+      "family": "Work, clients and collaboration",
+      "requirement": "Manage delivery review, evidence-based acceptance and client dispute with scoped authority.",
+      "acceptance": "Client dispute retains original acceptance and audited revision (WORK).",
+      "test_suites": [
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§15",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-008",
+      "test_contract_id": "TEST-REQ-WRK-008",
+      "family": "Work, clients and collaboration",
+      "requirement": "Keep versioned risk register, triggers, owner and mitigation linked to work and KPI.",
+      "acceptance": "Unowned/stale risk cannot show resolved (WORK).",
+      "test_suites": [
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§15,70,72",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-009",
+      "test_contract_id": "TEST-REQ-WRK-009",
+      "family": "Work, clients and collaboration",
+      "requirement": "Govern KPI metric definitions, baselines, measurement windows, sources and outcome comparison.",
+      "acceptance": "Metric version and freshness reconstruct; no invented improvement (WORK).",
+      "test_suites": [
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§24,70",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-010",
+      "test_contract_id": "TEST-REQ-WRK-010",
+      "family": "Work, clients and collaboration",
+      "requirement": "Orchestrate Meeting -> policy/consent -> authorized media or manual notes -> transcript/summary -> decision/task/requirement/risk/follow-up draft -> human approval -> source-linked outcome.",
+      "acceptance": "AI-off fa/en meeting completes end to end; no draft becomes authoritative without configured approval (MEET,WORK).",
+      "test_suites": [
+        "MEET",
+        "WORK"
+      ],
+      "release_target": "V1.0 manual; AI gated",
+      "source": "M§34",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-011",
+      "test_contract_id": "TEST-REQ-WRK-011",
+      "family": "Work, clients and collaboration",
+      "requirement": "Support client portal for scoped status, deliverables, approvals, invoices and ticket exchange.",
+      "acceptance": "Client A cannot infer client B; approve/reject audited (AUTH,UX).",
+      "test_suites": [
+        "AUTH",
+        "UX"
+      ],
+      "release_target": "V1.1",
+      "source": "M§31",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-012",
+      "test_contract_id": "TEST-REQ-WRK-012",
+      "family": "Work, clients and collaboration",
+      "requirement": "Support ticket intake, severity, assignment, customer communication, resolution and reopen are scoped and auditable.",
+      "acceptance": "Ticket routing/reopen works after outage, wrong client sees nothing (SUP,AUTH).",
+      "test_suites": [
+        "SUP",
+        "AUTH"
+      ],
+      "release_target": "V1.1",
+      "source": "M§32",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-013",
+      "test_contract_id": "TEST-REQ-WRK-013",
+      "family": "Work, clients and collaboration",
+      "requirement": "Customer Health shows dimensional payment, delivery, support and renewal facts with freshness.",
+      "acceptance": "Missing input reads unknown/stale, not healthy (WORK,AI).",
+      "test_suites": [
+        "WORK",
+        "AI"
+      ],
+      "release_target": "V1.1",
+      "source": "M§32",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-014",
+      "test_contract_id": "TEST-REQ-WRK-014",
+      "family": "Work, clients and collaboration",
+      "requirement": "Service packages define limits, add-ons, exclusions, recurrence and SLA with approved quote snapshot.",
+      "acceptance": "Package amendment never retroactively alters contract (FIN,WORK).",
+      "test_suites": [
+        "FIN",
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§27",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-015",
+      "test_contract_id": "TEST-REQ-WRK-015",
+      "family": "Work, clients and collaboration",
+      "requirement": "Reconcile attribution and marketer commission to collected cash, reversals and scoped approvals.",
+      "acceptance": "Refund produces clawback; no duplicate payout (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.1",
+      "source": "M§33",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-016",
+      "test_contract_id": "TEST-REQ-WRK-016",
+      "family": "Work, clients and collaboration",
+      "requirement": "Conversation threads retain participants, visibility, consent and versioned source links.",
+      "acceptance": "Revoked participant cannot retrieve old or new thread content (AUTH,WORK).",
+      "test_suites": [
+        "AUTH",
+        "WORK"
+      ],
+      "release_target": "V1.1",
+      "source": "M§69",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-017",
+      "test_contract_id": "TEST-REQ-WRK-017",
+      "family": "Work, clients and collaboration",
+      "requirement": "Role dashboards and executive command center link metrics to authorized underlying facts.",
+      "acceptance": "No false aggregate/tenant leak (TEN,AI).",
+      "test_suites": [
+        "TEN",
+        "AI"
+      ],
+      "release_target": "V1.5",
+      "source": "M§78",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-018",
+      "test_contract_id": "TEST-REQ-WRK-018",
+      "family": "Work, clients and collaboration",
+      "requirement": "Process intelligence identifies bottleneck/variance from timestamped evidence.",
+      "acceptance": "Counterfactual recommendation labeled and reviewable (AI,WORK).",
+      "test_suites": [
+        "AI",
+        "WORK"
+      ],
+      "release_target": "V1.5",
+      "source": "M§88",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-019",
+      "test_contract_id": "TEST-REQ-WRK-019",
+      "family": "Work, clients and collaboration",
+      "requirement": "Incident Management records severity, affected customers/services/assets, timeline, owner, communications, mitigation, resolution, root cause, postmortem, follow-up and project/asset/ticket/security links; distinct from risk and issue.",
+      "acceptance": "Cross-client outage produces complete scoped evidence and independent state transitions (INC,AUTH).",
+      "test_suites": [
+        "INC",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§72",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-020",
+      "test_contract_id": "TEST-REQ-WRK-020",
+      "family": "Work, clients and collaboration",
+      "requirement": "CRM/Sales manages lead, account, contact, opportunity, stage, attribution and handoff to scoped discovery/quote.",
+      "acceptance": "Won/lost opportunity and client handoff retain provenance; no cross-client leak (CRM,AUTH).",
+      "test_suites": [
+        "CRM",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§26,33",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-021",
+      "test_contract_id": "TEST-REQ-WRK-021",
+      "family": "Work, clients and collaboration",
+      "requirement": "Issue register handles actual work defects/blockers, severity, owner, fix verification and linked risk/incident.",
+      "acceptance": "Closing issue never closes linked incident or risk (WORK).",
+      "test_suites": [
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§15",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-022",
+      "test_contract_id": "TEST-REQ-WRK-022",
+      "family": "Work, clients and collaboration",
+      "requirement": "Change control versions scope/impact/cost/approval and invalidates affected quote, plan or acceptance.",
+      "acceptance": "Unauthorized changed requirement cannot inherit prior signoff (WORK,FIN).",
+      "test_suites": [
+        "WORK",
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§15,16",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-023",
+      "test_contract_id": "TEST-REQ-WRK-023",
+      "family": "Work, clients and collaboration",
+      "requirement": "SLA policy defines service calendar, start/pause/resume, breach/escalation and version per customer/service.",
+      "acceptance": "Boundary/DST/late-event clock independently recomputed from evidence (SLA,WORK).",
+      "test_suites": [
+        "SLA",
+        "WORK"
+      ],
+      "release_target": "V1.1",
+      "source": "M§32",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-024",
+      "test_contract_id": "TEST-REQ-WRK-024",
+      "family": "Work, clients and collaboration",
+      "requirement": "Meeting capture/import handles country policy and consent per participant, audio/video/manual paths, optional timestamped speaker transcription and ACL.",
+      "acceptance": "Denied/withdrawn capture sends no media to processor; unknown speaker/timing labeled (MEET,POL).",
+      "test_suites": [
+        "MEET",
+        "POL"
+      ],
+      "release_target": "V1.0 manual; provider gated",
+      "source": "M§34",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-025",
+      "test_contract_id": "TEST-REQ-WRK-025",
+      "family": "Work, clients and collaboration",
+      "requirement": "Meeting-derived summary, decisions, tasks, requirements, risks and follow-up are source-linked drafts with version-bound review/approval.",
+      "acceptance": "Stale transcript or rejected draft creates no authoritative Work command (MEET,WORK).",
+      "test_suites": [
+        "MEET",
+        "WORK"
+      ],
+      "release_target": "V1.0 manual; AI gated",
+      "source": "M§16,34",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-026",
+      "test_contract_id": "TEST-REQ-WRK-026",
+      "family": "Work, clients and collaboration",
+      "requirement": "OKR aligns objectives, key results, owner, review cycle and approved KPI references without rewriting historical goals.",
+      "acceptance": "Revised key result retains baseline and evidence; no KPI score fabricates achievement (WORK).",
+      "test_suites": [
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§24,70",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-027",
+      "test_contract_id": "TEST-REQ-WRK-027",
+      "family": "Work, clients and collaboration",
+      "requirement": "Form engine versions schema, validation, submission, field ACL and approval workflow.",
+      "acceptance": "Old form submission migrates or stays readable; sensitive field denied (AUTH,WORK).",
+      "test_suites": [
+        "AUTH",
+        "WORK"
+      ],
+      "release_target": "V1.1",
+      "source": "M§69",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-028",
+      "test_contract_id": "TEST-REQ-WRK-028",
+      "family": "Work, clients and collaboration",
+      "requirement": "Notification engine versions templates, recipient preference/consent, retry and delivery evidence.",
+      "acceptance": "Duplicate event sends at most one permitted notice, failure visible (WORK,OPS).",
+      "test_suites": [
+        "WORK",
+        "OPS"
+      ],
+      "release_target": "V1.1",
+      "source": "M§69",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-029",
+      "test_contract_id": "TEST-REQ-WRK-029",
+      "family": "Work, clients and collaboration",
+      "requirement": "Meeting transcription/semantic adapters are provider-neutral with local/private route, AI-off fallback, fa/en support, retention/deletion and derivative revalidation.",
+      "acceptance": "Provider outage/consent revocation uses manual path; deleted media does not reappear after restore (MEET,DATA).",
+      "test_suites": [
+        "MEET",
+        "DATA"
+      ],
+      "release_target": "First AI use gated; broad V1.5",
+      "source": "M§34,37,55",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-WRK-030",
+      "test_contract_id": "TEST-REQ-WRK-030",
+      "family": "Work, clients and collaboration",
+      "requirement": "Contract/signature lifecycle preserves counterparty, scope, approval, signature evidence, amendment and obligation snapshot independent of quote.",
+      "acceptance": "Ambiguous signature stays pending; changed quote cannot inherit signed contract (WORK,FIN).",
+      "test_suites": [
+        "WORK",
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§28",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-001",
+      "test_contract_id": "TEST-REQ-TAL-001",
+      "family": "Talent, engagement and people",
+      "requirement": "Separate private talent HR data from purpose-limited, consented, revocable public Network projection.",
+      "acceptance": "Opt-out removes visibility; restore does not resurrect (TEN,DATA).",
+      "test_suites": [
+        "TEN",
+        "DATA"
+      ],
+      "release_target": "V1.2",
+      "source": "M§10,50",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-002",
+      "test_contract_id": "TEST-REQ-TAL-002",
+      "family": "Talent, engagement and people",
+      "requirement": "Verify capabilities, grades, evidence, availability and claims without universal person score.",
+      "acceptance": "Unverified capability labeled; correction path (POL,AI).",
+      "test_suites": [
+        "POL",
+        "AI"
+      ],
+      "release_target": "V1.2",
+      "source": "M§11,12,52",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-003",
+      "test_contract_id": "TEST-REQ-TAL-003",
+      "family": "Talent, engagement and people",
+      "requirement": "Recruit through intake, screening, consent, review, appeal and documented decisions.",
+      "acceptance": "Candidate sees applicable decision; prohibited inference denied (POL,UX).",
+      "test_suites": [
+        "POL",
+        "UX"
+      ],
+      "release_target": "V1.2",
+      "source": "M§12,51",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-004",
+      "test_contract_id": "TEST-REQ-TAL-004",
+      "family": "Talent, engagement and people",
+      "requirement": "Resolve sourcing eligibility before candidate discovery, count, ranking, contact or invitation.",
+      "acceptance": "Ineligible/unknown omitted, including facets (POL,TEN).",
+      "test_suites": [
+        "POL",
+        "TEN"
+      ],
+      "release_target": "V1.2",
+      "source": "V7/02; M§10,14",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-005",
+      "test_contract_id": "TEST-REQ-TAL-005",
+      "family": "Talent, engagement and people",
+      "requirement": "Iran product sourcing mode defaults to DOMESTIC_ONLY; the approved Country/Jurisdiction Pack declares its own required facts and domestic evaluator, with unknown facts pending and excluded before discovery.",
+      "acceptance": "No pack/no required fact yields no rankable candidate; nationality/IP shortcut denied; no legal conclusion inferred (POL).",
+      "test_suites": [
+        "POL"
+      ],
+      "release_target": "V1.2",
+      "source": "V7/02; owner V7.2 clarification",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-006",
+      "test_contract_id": "TEST-REQ-TAL-006",
+      "family": "Talent, engagement and people",
+      "requirement": "Other approved packs explicitly choose DOMESTIC_ONLY, REGIONAL, ALLOWLIST_COUNTRIES or GLOBAL_IF_ELIGIBLE sourcing subject to pack-declared facts and all corridor obligations.",
+      "acceptance": "Synthetic countries show distinct pools; missing required facts never enter facets or rank (POL).",
+      "test_suites": [
+        "POL"
+      ],
+      "release_target": "V1.2, V1.9",
+      "source": "V7/02",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-007",
+      "test_contract_id": "TEST-REQ-TAL-007",
+      "family": "Talent, engagement and people",
+      "requirement": "Matching explains hard eligibility, capabilities, availability, conflicts, price and uncertainty with human review.",
+      "acceptance": "Fair exposure/appeal and no disallowed candidate (POL,AI).",
+      "test_suites": [
+        "POL",
+        "AI"
+      ],
+      "release_target": "V1.2",
+      "source": "M§14,50,51",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-008",
+      "test_contract_id": "TEST-REQ-TAL-008",
+      "family": "Talent, engagement and people",
+      "requirement": "Team builder solves skill/time/cost/constraints with infeasibility explanation and approvals.",
+      "acceptance": "Solver repeatability and feasible reservation (WORK,AI).",
+      "test_suites": [
+        "WORK",
+        "AI"
+      ],
+      "release_target": "V1.3",
+      "source": "M§9,14",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-009",
+      "test_contract_id": "TEST-REQ-TAL-009",
+      "family": "Talent, engagement and people",
+      "requirement": "Workforce architect models role/team plan, utilization, grade gap, hiring and scenario without auto-firing/hiring.",
+      "acceptance": "Scenario comparison traces assumptions (AI,WORK).",
+      "test_suites": [
+        "AI",
+        "WORK"
+      ],
+      "release_target": "V1.3",
+      "source": "M§9,22",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-010",
+      "test_contract_id": "TEST-REQ-TAL-010",
+      "family": "Talent, engagement and people",
+      "requirement": "Explicitly select employment/contractor/managed/outcome engagement and responsible employer, payer and IP party.",
+      "acceptance": "Unsupported jurisdiction/mode cannot contract (POL).",
+      "test_suites": [
+        "POL"
+      ],
+      "release_target": "V1.4",
+      "source": "M§23; V7/02",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-011",
+      "test_contract_id": "TEST-REQ-TAL-011",
+      "family": "Talent, engagement and people",
+      "requirement": "Compensation rules and floors are independent of client price and AI score; legal/fair minimum cannot be overridden.",
+      "acceptance": "Below-floor proposal blocked (FIN,POL).",
+      "test_suites": [
+        "FIN",
+        "POL"
+      ],
+      "release_target": "V1.4",
+      "source": "M§20",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-012",
+      "test_contract_id": "TEST-REQ-TAL-012",
+      "family": "Talent, engagement and people",
+      "requirement": "Payroll uses approved entitlement/rules and authorized review before posting/payment.",
+      "acceptance": "Tracked time alone pays nobody; replay exact (FIN,POL).",
+      "test_suites": [
+        "FIN",
+        "POL"
+      ],
+      "release_target": "V1.4",
+      "source": "M§24,25",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-013",
+      "test_contract_id": "TEST-REQ-TAL-013",
+      "family": "Talent, engagement and people",
+      "requirement": "Managed marketplace governs delivery evidence, dispute and settlement hold/release under approved opt-in terms and assigned liability.",
+      "acceptance": "Disputed work cannot silently settle; decision/reversal cites responsible party and evidence (WORK,FIN).",
+      "test_suites": [
+        "WORK",
+        "FIN"
+      ],
+      "release_target": "V1.4",
+      "source": "M§13",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-014",
+      "test_contract_id": "TEST-REQ-TAL-014",
+      "family": "Talent, engagement and people",
+      "requirement": "Employment-AI candidate changes use offline evaluation, bias review, shadow/limited rollout and appeal; deterministic/human path remains available.",
+      "acceptance": "Adverse subgroup/rights blocker stops AI activation; no external AI without ODR-006 and AI controls (AI,POL).",
+      "test_suites": [
+        "AI",
+        "POL"
+      ],
+      "release_target": "V1.2 governance; AI gated",
+      "source": "M§51; V7/07",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-015",
+      "test_contract_id": "TEST-REQ-TAL-015",
+      "family": "Talent, engagement and people",
+      "requirement": "ATS assessments/interviews/tests have consent, scoring rubric, reviewer, accommodation, appeal, evidence and version independently of general applicant stages.",
+      "acceptance": "Candidate can contest/review an assessment; AI-off and inaccessible test fallback work (POL,UX).",
+      "test_suites": [
+        "POL",
+        "UX"
+      ],
+      "release_target": "V1.2",
+      "source": "M§12,51",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TAL-016",
+      "test_contract_id": "TEST-REQ-TAL-016",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "Talent, engagement and people",
+      "requirement": "Managed-network vetting independently verifies scoped qualifications, evidence, consent, reviewer and revocation before assignment.",
+      "acceptance": "Unvetted/revoked talent cannot accept managed work; reviewer decision and appeal trace persist (POL,AUTH).",
+      "test_suites": [
+        "POL",
+        "AUTH"
+      ],
+      "release_target": "V1.4",
+      "source": "M§13"
+    },
+    {
+      "id": "REQ-TAL-017",
+      "test_contract_id": "TEST-REQ-TAL-017",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "Talent, engagement and people",
+      "requirement": "Managed-work replacement independently records trigger, worker/client notice, approval, handoff and liability/compensation allocation under reviewed terms.",
+      "acceptance": "Replaced work keeps both parties' evidence and approved responsibility; no duplicate bill or pay (WORK,FIN).",
+      "test_suites": [
+        "WORK",
+        "FIN"
+      ],
+      "release_target": "V1.4",
+      "source": "M§13"
+    },
+    {
+      "id": "REQ-GLB-001",
+      "test_contract_id": "TEST-REQ-GLB-001",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Resolve Jurisdiction Context from all relevant parties, entity, worker location, service, data route, currency and provider.",
+      "acceptance": "Tenant country alone cannot authorize (POL).",
+      "test_suites": [
+        "POL"
+      ],
+      "release_target": "V1.0",
+      "source": "V7/02",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GLB-002",
+      "test_contract_id": "TEST-REQ-GLB-002",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Compose Global, Country/Subnational, industry, provider and tenant constraints restrictively.",
+      "acceptance": "Conflict/unknown blocks affected action with obligations (POL).",
+      "test_suites": [
+        "POL"
+      ],
+      "release_target": "V1.0",
+      "source": "V7/02,04",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GLB-003",
+      "test_contract_id": "TEST-REQ-GLB-003",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Return typed executable/blocked/pending decision with policy and fact versions, reasons and expiry.",
+      "acceptance": "Pending never interpreted as allow (POL).",
+      "test_suites": [
+        "POL"
+      ],
+      "release_target": "V1.0",
+      "source": "V7/02",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GLB-004",
+      "test_contract_id": "TEST-REQ-GLB-004",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Re-evaluate eligibility at dispatch after approval and on queued/retry operations.",
+      "acceptance": "Revoked policy stops previously queued action (POL,OPS).",
+      "test_suites": [
+        "POL",
+        "OPS"
+      ],
+      "release_target": "V1.0",
+      "source": "V7/02",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GLB-005",
+      "test_contract_id": "TEST-REQ-GLB-005",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Country pack covers entity/work/tax/payroll/banking/payment/AI/data/commerce/localization/accessibility and evidence.",
+      "acceptance": "Empty jurisdiction remains unavailable, not green (POL).",
+      "test_suites": [
+        "POL"
+      ],
+      "release_target": "V1.2",
+      "source": "V7/02,07",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GLB-006",
+      "test_contract_id": "TEST-REQ-GLB-006",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Provider registry binds capability, country/corridor, terms, residency, currency, status, owner, expiry and fallback.",
+      "acceptance": "Ineligible fallback denied; outage state visible (POL,OPS).",
+      "test_suites": [
+        "POL",
+        "OPS"
+      ],
+      "release_target": "V1.2",
+      "source": "V7/02",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GLB-007",
+      "test_contract_id": "TEST-REQ-GLB-007",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Separate pack design maturity, publisher/support ownership and runtime eligibility.",
+      "acceptance": "Documented pack not executable until reviewed (POL).",
+      "test_suites": [
+        "POL"
+      ],
+      "release_target": "V1.2",
+      "source": "V7/02",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GLB-008",
+      "test_contract_id": "TEST-REQ-GLB-008",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Translate/localize legal content with reviewed version and effective scope; support Jalali presentation and explicit IRR/Toman.",
+      "acceptance": "Wrong calendar/unit cannot silently enter contract (UX,FIN).",
+      "test_suites": [
+        "UX",
+        "FIN"
+      ],
+      "release_target": "V1.0, V1.9",
+      "source": "M§30,87,85",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GLB-009",
+      "test_contract_id": "TEST-REQ-GLB-009",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Govern cross-system data interoperability with schema mapping, provenance, identifier matching and versioned contract; import/export and public API have separate owners.",
+      "acceptance": "Cross-system round trip declares nonportable fields and retains source lineage (DATA,EXT).",
+      "test_suites": [
+        "DATA",
+        "EXT"
+      ],
+      "release_target": "V1.1, V1.9",
+      "source": "M§73,98",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GLB-010",
+      "test_contract_id": "TEST-REQ-GLB-010",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Screen transaction/engagement counterparties and restricted corridors against current approved applicable policy, with scoped review and appeal; data-transfer controls are separately governed by REQ-TRU-005.",
+      "acceptance": "Unknown/flagged counterparty blocks affected transaction with evidence, qualified review and no inferred legal blanket claim (POL).",
+      "test_suites": [
+        "POL"
+      ],
+      "release_target": "V1.4, V1.9",
+      "source": "V7/02,07",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-GLB-011",
+      "test_contract_id": "TEST-REQ-GLB-011",
+      "family": "Global policy, providers and interoperability",
+      "requirement": "Each Country/Jurisdiction Pack declares sourcing modes, required fact schemas and versioned domestic/region/allowlist evaluator; Core interprets typed policy results, never fixes a country's legal definition.",
+      "acceptance": "Missing pack/fact fails pending before count/rank; revised pack changes synthetic eligibility with audit (POL,TEN).",
+      "test_suites": [
+        "POL",
+        "TEN"
+      ],
+      "release_target": "V1.2",
+      "source": "V7/02; V7.2 owner clarification",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-001",
+      "test_contract_id": "TEST-REQ-FIN-001",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Keep legal-entity/book double-entry journals balanced in exact decimal functional currency.",
+      "acceptance": "Independent trial balance equals zero (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§29,67",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-002",
+      "test_contract_id": "TEST-REQ-FIN-002",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Freeze posted lines; corrections are linked reversal/adjustment and closed period stays locked.",
+      "acceptance": "Update/delete/repost rejected (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§29",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-003",
+      "test_contract_id": "TEST-REQ-FIN-003",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Version money precision, currency exponent and rounding boundary/method in authoritative financial rule snapshots.",
+      "acceptance": "Original money result reproduces exactly across retry and reversal (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§19,85",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-004",
+      "test_contract_id": "TEST-REQ-FIN-004",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Model client invoice/receivable, allocation, partial receipt, overpayment, credit/refund, chargeback and aging.",
+      "acceptance": "AR matches exact ledger and settlement after out-of-order events (FIN,PAY).",
+      "test_suites": [
+        "FIN",
+        "PAY"
+      ],
+      "release_target": "V1.0",
+      "source": "M§29,45,67",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-005",
+      "test_contract_id": "TEST-REQ-FIN-005",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Deduplicate provider attempts/webhooks; ambiguous payment remains reconciliation-pending before retry.",
+      "acceptance": "Timeout after capture makes one charge only (PAY).",
+      "test_suites": [
+        "PAY"
+      ],
+      "release_target": "V1.0",
+      "source": "M§45",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-006",
+      "test_contract_id": "TEST-REQ-FIN-006",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Reconcile external settlement, provider fees and ledger; differences create cases, not hidden postings.",
+      "acceptance": "Partial refund and fee discrepancy visible (FIN,PAY).",
+      "test_suites": [
+        "FIN",
+        "PAY"
+      ],
+      "release_target": "V1.0",
+      "source": "M§29,45",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-007",
+      "test_contract_id": "TEST-REQ-FIN-007",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Calculate quote cost waterfall, gross/contribution/fully-loaded margin with explicit zero-denominator behavior.",
+      "acceptance": "Independent scenario recomputes (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§19,113",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-008",
+      "test_contract_id": "TEST-REQ-FIN-008",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Enforce versioned client business price floor and scoped management exception without changing contracted terms.",
+      "acceptance": "AI/unauthorized user cannot override; below-floor quote blocked without valid exception (FIN,AUTH).",
+      "test_suites": [
+        "FIN",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§19,113",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-009",
+      "test_contract_id": "TEST-REQ-FIN-009",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Govern rate-book currencies, units, effective dates and grandfathered contract terms.",
+      "acceptance": "Retroactive rate change rejected; original quote reproducible (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§21,27",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-010",
+      "test_contract_id": "TEST-REQ-FIN-010",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Govern recurring billing, plan change, proration, credit, refund and collection independently of client delivery revenue.",
+      "acceptance": "Contract/usage/invoice reconcile (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.6",
+      "source": "M§57,67",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-011",
+      "test_contract_id": "TEST-REQ-FIN-011",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Distinguish tenant operating books, Hayool product economics and corporate statutory books.",
+      "acceptance": "GMV not counted as platform revenue (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.6",
+      "source": "V7/06",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-012",
+      "test_contract_id": "TEST-REQ-FIN-012",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Maintain 36-month conservative/base/upside operating and liquidity scenarios with dated sourced inputs.",
+      "acceptance": "Sensitivity, runway and collection delay reproducible (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.6",
+      "source": "V7/06",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-013",
+      "test_contract_id": "TEST-REQ-FIN-013",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Pricing Lab pre-registers cohorts, guardrails, stop criteria and owner approval before experiment.",
+      "acceptance": "Harm/guardrail stop works; no live unknown-price change (FIN,AI).",
+      "test_suites": [
+        "FIN",
+        "AI"
+      ],
+      "release_target": "V1.5",
+      "source": "M§114",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-014",
+      "test_contract_id": "TEST-REQ-FIN-014",
+      "family": "Financial, pricing and commercial",
+      "requirement": "AI credits reserve/reconcile/release atomically, attribute actual provider/model/tool usage and honor cap.",
+      "acceptance": "Parallel jobs never overspend or double charge (FIN,AI).",
+      "test_suites": [
+        "FIN",
+        "AI"
+      ],
+      "release_target": "V1.5",
+      "source": "M§38,112",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-015",
+      "test_contract_id": "TEST-REQ-FIN-015",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Separate marketplace/managed/SaaS/AI/implementation stream economics, funded payout reserves and cash bridge.",
+      "acceptance": "Stream contribution and liability reconcile to cash (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.4, V1.6",
+      "source": "M§58,119; V7/06",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-016",
+      "test_contract_id": "TEST-REQ-FIN-016",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Procurement/expense/vendor approvals produce controlled payable and cost-center/project attribution.",
+      "acceptance": "Unapproved expense cannot post as paid (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.7",
+      "source": "M§68",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-017",
+      "test_contract_id": "TEST-REQ-FIN-017",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Enterprise accounting expansion is activated per reviewed legal entity, book and jurisdiction, with no implicit statutory reporting claim.",
+      "acceptance": "Unsupported accounting mode remains unavailable (FIN,POL).",
+      "test_suites": [
+        "FIN",
+        "POL"
+      ],
+      "release_target": "V1.9",
+      "source": "M§103",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-018",
+      "test_contract_id": "TEST-REQ-FIN-018",
+      "family": "Financial, pricing and commercial",
+      "requirement": "BudgetPlan by legal entity/branch/department/team/project/cost center, period/currency and original/approved/revised version is independently authorized.",
+      "acceptance": "Recreate all baselines; cross-entity or stale revision denied (BUD,AUTH).",
+      "test_suites": [
+        "BUD",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§4,29; V7.2 owner",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-019",
+      "test_contract_id": "TEST-REQ-FIN-019",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Cost Center and Profit Center hierarchies, assignment, effective date and ledger/project accounting dimensions are governed separately from budget values.",
+      "acceptance": "Reassignment never rewrites old posted dimensions; roll-up does not double count (BUD,FIN).",
+      "test_suites": [
+        "BUD",
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§4,29",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-020",
+      "test_contract_id": "TEST-REQ-FIN-020",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Budget consumption distinguishes committed, ledger-backed actual and separately versioned forecast, with release/reconciliation and currency/period mapping.",
+      "acceptance": "Concurrent reservations and partial invoice/refund conserve budget; actual reconciles to posted journal (BUD,FIN).",
+      "test_suites": [
+        "BUD",
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§29,68; V7.2 owner",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-021",
+      "test_contract_id": "TEST-REQ-FIN-021",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Variance against approved/revised baseline triggers versioned thresholds, approvals, escalation and project profitability drilldown.",
+      "acceptance": "Split purchase/stale approval cannot evade threshold; variance and margin trace to sources (BUD,FIN).",
+      "test_suites": [
+        "BUD",
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§19,29; V7.2 owner",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-022",
+      "test_contract_id": "TEST-REQ-FIN-022",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Discount Guardrails use versioned eligibility, threshold, non-stacking rules, expiration, approvals and protected margin/compensation constraints.",
+      "acceptance": "Concurrent discounts or channel split cannot undercut floor; exception leaves audit and original contract intact (FIN,AUTH).",
+      "test_suites": [
+        "FIN",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§27,113",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-023",
+      "test_contract_id": "TEST-REQ-FIN-023",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Vendor payable/expense lifecycle records obligation, invoice, approval, payment allocation, credit and aging separately from receivables.",
+      "acceptance": "AP posting and supplier refund reconcile to ledger; unapproved obligation cannot pay (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.0 foundation; V1.7 breadth",
+      "source": "M§29,68",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-024",
+      "test_contract_id": "TEST-REQ-FIN-024",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Worker compensation floor and approved rate policy are independent of client price, margin and business-floor exception.",
+      "acceptance": "Underfloor offer denied despite client discount approval; original rate reproducible (FIN,POL).",
+      "test_suites": [
+        "FIN",
+        "POL"
+      ],
+      "release_target": "V1.2/1.4",
+      "source": "M§20",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-025",
+      "test_contract_id": "TEST-REQ-FIN-025",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Principal/agent revenue recognition basis is explicitly reviewed per stream/jurisdiction before gross/net reporting.",
+      "acceptance": "GMV/take-rate and payout never inflate recognized Hayool revenue (FIN,POL).",
+      "test_suites": [
+        "FIN",
+        "POL"
+      ],
+      "release_target": "V1.4/1.6",
+      "source": "M§58,119; V7/06",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-026",
+      "test_contract_id": "TEST-REQ-FIN-026",
+      "family": "Financial, pricing and commercial",
+      "requirement": "FX source, rate type/effective time, currency conversion and remeasurement policy are versioned separately from rounding.",
+      "acceptance": "Historical cross-currency journal reproduces from recorded rate, missing rate blocks (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§85",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-027",
+      "test_contract_id": "TEST-REQ-FIN-027",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Intercompany accounting creates paired entity transactions with elimination mapping and separate approvals.",
+      "acceptance": "Both books balance; orphan side flagged, not hidden by consolidation (FIN).",
+      "test_suites": [
+        "FIN"
+      ],
+      "release_target": "V1.9",
+      "source": "M§103",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-028",
+      "test_contract_id": "TEST-REQ-FIN-028",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Tax/e-invoice pack owns official identifiers/numbering, validation, submission and correction with qualified jurisdiction review.",
+      "acceptance": "Failed submission remains pending; void/reissue never reuses number (FIN,POL).",
+      "test_suites": [
+        "FIN",
+        "POL"
+      ],
+      "release_target": "V1.9",
+      "source": "M§103",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-029",
+      "test_contract_id": "TEST-REQ-FIN-029",
+      "family": "Financial, pricing and commercial",
+      "requirement": "Revenue recognition policy distinguishes performance obligation, accrual, deferral and principal/agent basis per stream.",
+      "acceptance": "Contract amendment and partial delivery produce reproducible schedule (FIN,POL).",
+      "test_suites": [
+        "FIN",
+        "POL"
+      ],
+      "release_target": "V1.9",
+      "source": "M§103",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-FIN-030",
+      "test_contract_id": "TEST-REQ-FIN-030",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "Financial, pricing and commercial",
+      "requirement": "Fixed-asset accounting independently links qualified Asset records to capitalization, depreciation/amortization schedule, impairment and disposal with posted ledger truth.",
+      "acceptance": "Schedule/revision/disposal reproduce independent journal lines; asset metadata never posts or rewrites accounting history by itself (FIN,AST).",
+      "test_suites": [
+        "FIN",
+        "AST"
+      ],
+      "release_target": "V1.9",
+      "source": "M§35,103"
+    },
+    {
+      "id": "REQ-AI-001",
+      "test_contract_id": "TEST-REQ-AI-001",
+      "family": "AI, data and outcomes",
+      "requirement": "Route work to deterministic, retrieval, solver, predictive, semantic or generative engine based on task contract.",
+      "acceptance": "Money/auth/tax never delegated to LLM (AI).",
+      "test_suites": [
+        "AI"
+      ],
+      "release_target": "V1.0",
+      "source": "V7/04; M§100,111",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-002",
+      "test_contract_id": "TEST-REQ-AI-002",
+      "family": "AI, data and outcomes",
+      "requirement": "Keep core product usable when all external AI disabled; degrade explicitly.",
+      "acceptance": "GJ-01A succeeds AI-off (AI,WORK).",
+      "test_suites": [
+        "AI",
+        "WORK"
+      ],
+      "release_target": "V1.0",
+      "source": "M§37,111",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-003",
+      "test_contract_id": "TEST-REQ-AI-003",
+      "family": "AI, data and outcomes",
+      "requirement": "Govern provider/model allowlist, data classes, region, terms, cost, fallback and effective version.",
+      "acceptance": "Missing DPA/eligibility denies call (AI,POL).",
+      "test_suites": [
+        "AI",
+        "POL"
+      ],
+      "release_target": "First external AI call; broad V1.5",
+      "source": "M§37,112; V7/07",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-004",
+      "test_contract_id": "TEST-REQ-AI-004",
+      "family": "AI, data and outcomes",
+      "requirement": "Enforce retrieval ACL before context; treat retrieved text, tool results and app output as untrusted.",
+      "acceptance": "Injection cannot grant scope/secrets (AI,AUTH).",
+      "test_suites": [
+        "AI",
+        "AUTH"
+      ],
+      "release_target": "First external AI call; broad V1.5",
+      "source": "M§42,54",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-005",
+      "test_contract_id": "TEST-REQ-AI-005",
+      "family": "AI, data and outcomes",
+      "requirement": "Trace prompt/template/algorithm/knowledge/policy versions, evidence, confidence and human decision.",
+      "acceptance": "Replay decision provenance; cannot invent citation (AI).",
+      "test_suites": [
+        "AI"
+      ],
+      "release_target": "First external AI call; broad V1.5",
+      "source": "M§41,47",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-006",
+      "test_contract_id": "TEST-REQ-AI-006",
+      "family": "AI, data and outcomes",
+      "requirement": "Evaluate high-impact change offline, shadow, limited and active with rollback and drift stop.",
+      "acceptance": "Failing fairness/safety metric blocks promotion (AI).",
+      "test_suites": [
+        "AI"
+      ],
+      "release_target": "First relevant AI activation; broad V1.5",
+      "source": "M§40,51,71",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-007",
+      "test_contract_id": "TEST-REQ-AI-007",
+      "family": "AI, data and outcomes",
+      "requirement": "Cost reserve/provider selection respects tenant/project/user/agent caps and user-visible consumption.",
+      "acceptance": "Race/timeout reconciled without cap bypass (AI,FIN).",
+      "test_suites": [
+        "AI",
+        "FIN"
+      ],
+      "release_target": "First external AI call; broad V1.5",
+      "source": "M§38,112",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-008",
+      "test_contract_id": "TEST-REQ-AI-008",
+      "family": "AI, data and outcomes",
+      "requirement": "Build governed Work Graph and capability ontology with versioned typed edges and authoritative source refs.",
+      "acceptance": "No inferred edge grants permission/payment (AI,TEN).",
+      "test_suites": [
+        "AI",
+        "TEN"
+      ],
+      "release_target": "V1.3",
+      "source": "M§4; data spec",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-009",
+      "test_contract_id": "TEST-REQ-AI-009",
+      "family": "AI, data and outcomes",
+      "requirement": "Outcome learning uses consented, minimized, aggregated signals with quality/bias/drift checks.",
+      "acceptance": "Withdrawal removes contribution as policy permits (AI,DATA).",
+      "test_suites": [
+        "AI",
+        "DATA"
+      ],
+      "release_target": "V1.5",
+      "source": "M§47,50",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-010",
+      "test_contract_id": "TEST-REQ-AI-010",
+      "family": "AI, data and outcomes",
+      "requirement": "Personal copilot proposes source-cited, permission-scoped user tasks/next actions as drafts with explicit approval and AI-off fallback.",
+      "acceptance": "Revoked source or rejected suggestion cannot mutate Work, leak hidden facts or silently reappear (AI,WORK).",
+      "test_suites": [
+        "AI",
+        "WORK"
+      ],
+      "release_target": "V1.5",
+      "source": "M§79",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-011",
+      "test_contract_id": "TEST-REQ-AI-011",
+      "family": "AI, data and outcomes",
+      "requirement": "Forecasts label horizon, calibration, uncertainty, data quality and version; dashboard drilldown.",
+      "acceptance": "Stale or weak data not confident forecast (AI).",
+      "test_suites": [
+        "AI"
+      ],
+      "release_target": "V1.5",
+      "source": "M§48,49",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-012",
+      "test_contract_id": "TEST-REQ-AI-012",
+      "family": "AI, data and outcomes",
+      "requirement": "Digital workers and agents receive scoped identity, budget, tool allowlist, approval threshold and suspension.",
+      "acceptance": "App cannot perform privileged cross-tenant action (AI,AUTH).",
+      "test_suites": [
+        "AI",
+        "AUTH"
+      ],
+      "release_target": "V1.5",
+      "source": "M§39,40",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-013",
+      "test_contract_id": "TEST-REQ-AI-013",
+      "family": "AI, data and outcomes",
+      "requirement": "Jev/TypeSafe is optional semantic adapter; benchmark and approved terms before use.",
+      "acceptance": "Equivalent task routes with Jev absent (AI).",
+      "test_suites": [
+        "AI"
+      ],
+      "release_target": "V1.5",
+      "source": "M§41; V7/04",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-014",
+      "test_contract_id": "TEST-REQ-AI-014",
+      "family": "AI, data and outcomes",
+      "requirement": "Cross-tenant learning is separately consented and privacy-reviewed, with no raw private pooling.",
+      "acceptance": "Tenant revocation stops future use (AI,DATA).",
+      "test_suites": [
+        "AI",
+        "DATA"
+      ],
+      "release_target": "V1.9",
+      "source": "M§50",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-015",
+      "test_contract_id": "TEST-REQ-AI-015",
+      "family": "AI, data and outcomes",
+      "requirement": "Business Digital Twin maintains typed, versioned scenario state tied to real Work/Resource/Transaction facts, with simulated assumptions distinguished from authority.",
+      "acceptance": "Replayed scenario explains divergence; simulation cannot post money or work (AI,FIN).",
+      "test_suites": [
+        "AI",
+        "FIN"
+      ],
+      "release_target": "V1.5",
+      "source": "M§36",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-016",
+      "test_contract_id": "TEST-REQ-AI-016",
+      "family": "AI, data and outcomes",
+      "requirement": "Product analytics captures consented activation/adoption/retention/error funnels separately from customer business metrics, with opt-out and privacy budget.",
+      "acceptance": "Opt-out stops nonessential telemetry; cohort metric reconstructs source events (AI,DATA).",
+      "test_suites": [
+        "AI",
+        "DATA"
+      ],
+      "release_target": "V1.1",
+      "source": "M§76",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-AI-017",
+      "test_contract_id": "TEST-REQ-AI-017",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "AI, data and outcomes",
+      "requirement": "AI Project Architect proposes cited scope, dependency, resource and economics scenarios as drafts under versioned budget/capacity/policy constraints.",
+      "acceptance": "Infeasible or stale proposal is labeled and rejected; no plan, assignment, spend or authoritative requirement appears before approval (AI,WORK).",
+      "test_suites": [
+        "AI",
+        "WORK"
+      ],
+      "release_target": "V1.5",
+      "source": "M§80"
+    },
+    {
+      "id": "REQ-EXT-001",
+      "test_contract_id": "TEST-REQ-EXT-001",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Route variability configuration -> Studio -> low-code -> Remote pro-code -> Core only by integrity test.",
+      "acceptance": "New tenant workflow works without Core fork (EXT).",
+      "test_suites": [
+        "EXT"
+      ],
+      "release_target": "V1.0, V1.7",
+      "source": "M§92,115; V7/08",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-002",
+      "test_contract_id": "TEST-REQ-EXT-002",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Studio owns bounded versioned custom schemas and records with field permission, quota, migration and tenant isolation.",
+      "acceptance": "A schema revision preserves authorized records and denies protected Core mutation or other-tenant access (EXT,TEN).",
+      "test_suites": [
+        "EXT",
+        "TEN"
+      ],
+      "release_target": "V1.7",
+      "source": "M§92; V7/08",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-003",
+      "test_contract_id": "TEST-REQ-EXT-003",
+      "family": "Studio, developer and marketplace",
+      "requirement": "AI App Builder creates draft only: describe, preview, validate, simulate, human review, publish, observe, rollback.",
+      "acceptance": "Invalid draft cannot publish (EXT,AI).",
+      "test_suites": [
+        "EXT",
+        "AI"
+      ],
+      "release_target": "V1.7",
+      "source": "V7/08",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-004",
+      "test_contract_id": "TEST-REQ-EXT-004",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Offer stable tenant-scoped public API with auth, versioned capability schema, pagination, quotas and idempotent commands.",
+      "acceptance": "Sample remote app calls public API only; incompatible change denied (EXT,AUTH).",
+      "test_suites": [
+        "EXT",
+        "AUTH"
+      ],
+      "release_target": "V1.1, V1.7",
+      "source": "M§84,109",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-005",
+      "test_contract_id": "TEST-REQ-EXT-005",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Apps have separate principal, declared field/action/egress/data scopes, signing and consent version.",
+      "acceptance": "Permission expansion blocks until re-consent (EXT,AUTH).",
+      "test_suites": [
+        "EXT",
+        "AUTH"
+      ],
+      "release_target": "V1.1, V1.7",
+      "source": "M§116; V7/08",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-006",
+      "test_contract_id": "TEST-REQ-EXT-006",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Remote execution isolates credentials, callback authenticity, quotas, replay and sandbox from API process.",
+      "acceptance": "App crash/compromise cannot read Core DB (EXT,TEN).",
+      "test_suites": [
+        "EXT",
+        "TEN"
+      ],
+      "release_target": "V1.7",
+      "source": "M§84,109",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-007",
+      "test_contract_id": "TEST-REQ-EXT-007",
+      "family": "Studio, developer and marketplace",
+      "requirement": "App install and upgrade/migration preserve tenant data, consent and public API compatibility.",
+      "acceptance": "One app survives platform upgrade; failed migration rolls back or forward-repairs (EXT,OPS).",
+      "test_suites": [
+        "EXT",
+        "OPS"
+      ],
+      "release_target": "V1.7",
+      "source": "M§59,117,118",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-008",
+      "test_contract_id": "TEST-REQ-EXT-008",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Marketplace listing governs publisher provenance, security/privacy review, compatibility, version/support, disclosure and suspension.",
+      "acceptance": "Three non-Core apps approved with independent review dossiers (EXT).",
+      "test_suites": [
+        "EXT"
+      ],
+      "release_target": "V1.10",
+      "source": "M§110,118",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-009",
+      "test_contract_id": "TEST-REQ-EXT-009",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Partner/industry apps use same policy and cannot gain Core privilege through certification label.",
+      "acceptance": "Suspended app loses tokens and webhooks (EXT,AUTH).",
+      "test_suites": [
+        "EXT",
+        "AUTH"
+      ],
+      "release_target": "V1.10",
+      "source": "M§109,110",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-010",
+      "test_contract_id": "TEST-REQ-EXT-010",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Developer portal provides docs, changelog, sandbox, examples, test harness, deprecation and conformance.",
+      "acceptance": "Independent partner completes install/upgrade (EXT).",
+      "test_suites": [
+        "EXT"
+      ],
+      "release_target": "V1.10",
+      "source": "M§109",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-011",
+      "test_contract_id": "TEST-REQ-EXT-011",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Public contract separates backward compatibility from re-consent on any new privilege, egress or billing.",
+      "acceptance": "Minor API change still requires consent when scope grows (EXT).",
+      "test_suites": [
+        "EXT"
+      ],
+      "release_target": "V1.1",
+      "source": "M§116",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-012",
+      "test_contract_id": "TEST-REQ-EXT-012",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Abandoned provider/app revocation and recovery preserve export and tenant continuity.",
+      "acceptance": "Forced removal leaves documented recoverable state (EXT,OPS).",
+      "test_suites": [
+        "EXT",
+        "OPS"
+      ],
+      "release_target": "V1.10",
+      "source": "V7/08",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-013",
+      "test_contract_id": "TEST-REQ-EXT-013",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Establish early tenant-scoped custom-field/schema/package version/auth foundation without protected-domain mutation.",
+      "acceptance": "V1.1 private package upgrades schema and preserves field ACL/data across tenants (EXT,TEN).",
+      "test_suites": [
+        "EXT",
+        "TEN"
+      ],
+      "release_target": "V1.1",
+      "source": "M§83,92; V7/08",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-014",
+      "test_contract_id": "TEST-REQ-EXT-014",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Public event/webhook lifecycle includes signed delivery, schema versions, replay bounds, recipient scope and revocation.",
+      "acceptance": "Duplicate/reordered event or revoked app never leaks tenant data (EXT,AUTH).",
+      "test_suites": [
+        "EXT",
+        "AUTH"
+      ],
+      "release_target": "V1.1, V1.7",
+      "source": "M§44,84,109",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-015",
+      "test_contract_id": "TEST-REQ-EXT-015",
+      "family": "Studio, developer and marketplace",
+      "requirement": "SDK/CLI, docs, synthetic test tenant and conformance harness enable independent developer build and debug.",
+      "acceptance": "External developer reproduces install and diagnostics from docs (EXT,UX).",
+      "test_suites": [
+        "EXT",
+        "UX"
+      ],
+      "release_target": "V1.7/1.10",
+      "source": "M§109",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-016",
+      "test_contract_id": "TEST-REQ-EXT-016",
+      "family": "Studio, developer and marketplace",
+      "requirement": "Marketplace billing, refund, payout, dispute and merchant-role terms are a separate approved financial lifecycle.",
+      "acceptance": "Failed app charge/refund reconciles and cannot pay unsupported publisher (EXT,FIN).",
+      "test_suites": [
+        "EXT",
+        "FIN"
+      ],
+      "release_target": "V1.10",
+      "source": "M§110,119",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-017",
+      "test_contract_id": "TEST-REQ-EXT-017",
+      "family": "Studio, developer and marketplace",
+      "requirement": "App uninstall/export/revocation handles retention, remote processor acknowledgment and tenant continuity independently of upgrade.",
+      "acceptance": "Uninstall revokes events/tokens and exports app-owned data without deleting other tenant records (EXT,DATA).",
+      "test_suites": [
+        "EXT",
+        "DATA"
+      ],
+      "release_target": "V1.7",
+      "source": "M§117,118",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-EXT-018",
+      "test_contract_id": "TEST-REQ-EXT-018",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "Studio, developer and marketplace",
+      "requirement": "Studio form/view builder authors accessible, versioned data entry and role-specific views with validation, field ACL and preview/publish lifecycle.",
+      "acceptance": "Independent builder creates usable fa/en form and view; wrong role cannot read/write hidden field, old submission stays reconstructible (EXT,UX).",
+      "test_suites": [
+        "EXT",
+        "UX"
+      ],
+      "release_target": "V1.7",
+      "source": "M§92; V7/08"
+    },
+    {
+      "id": "REQ-EXT-019",
+      "test_contract_id": "TEST-REQ-EXT-019",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "Studio, developer and marketplace",
+      "requirement": "Studio pure-rule and workflow engine versions bounded expressions, transition/approval authority, idempotency and rollback/forward correction without arbitrary Core I/O.",
+      "acceptance": "Unbounded expression fails, unauthorized approval denied, duplicate/reordered event leaves one correct state after migration (EXT,AUTH).",
+      "test_suites": [
+        "EXT",
+        "AUTH"
+      ],
+      "release_target": "V1.7",
+      "source": "M§92; V7/08"
+    },
+    {
+      "id": "REQ-UNI-001",
+      "test_contract_id": "TEST-REQ-UNI-001",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Govern party, catalog, order, inventory, fulfillment, resource and transaction typed primitives.",
+      "acceptance": "One no-code vertical uses primitives without Core fork (EXT,PHYS).",
+      "test_suites": [
+        "EXT",
+        "PHYS"
+      ],
+      "release_target": "V1.7",
+      "source": "M§91–94",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-002",
+      "test_contract_id": "TEST-REQ-UNI-002",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Intent-to-Outcome decomposes plan DAG, permissions, cost, approvals, rollback and observed proof.",
+      "acceptance": "Partial external failure has explicit recovery (PHYS,OPS).",
+      "test_suites": [
+        "PHYS",
+        "OPS"
+      ],
+      "release_target": "V1.7",
+      "source": "M§93",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-003",
+      "test_contract_id": "TEST-REQ-UNI-003",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Inventory movement and reservations track units, lot/serial, receipts, returns, transfers and quantity availability with scoped authority.",
+      "acceptance": "Concurrent reservations, duplicate return and wrong-lot dispatch conserve eligible quantities (PHYS).",
+      "test_suites": [
+        "PHYS"
+      ],
+      "release_target": "V1.8",
+      "source": "M§94",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-004",
+      "test_contract_id": "TEST-REQ-UNI-004",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Commerce order/fulfillment tracks partial confirmation, delivery, return/refund and settlement using policy-bound adapters.",
+      "acceptance": "GJ-05 reconciles returned order and explicit recovery (PHYS,FIN).",
+      "test_suites": [
+        "PHYS",
+        "FIN"
+      ],
+      "release_target": "V1.8",
+      "source": "M§94",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-005",
+      "test_contract_id": "TEST-REQ-UNI-005",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Manufacturing BOM/MRP/routing and production movement use approved version and safe external OT boundary.",
+      "acceptance": "Production quantity/cost reconcile; no unsafe control command (PHYS,FIN).",
+      "test_suites": [
+        "PHYS",
+        "FIN"
+      ],
+      "release_target": "V1.8 / Post depth",
+      "source": "M§95",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-006",
+      "test_contract_id": "TEST-REQ-UNI-006",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Agriculture/food uses provenance, lot trace, recall, yield and policy-bound claims.",
+      "acceptance": "Recall identifies affected lots with no invented certification (PHYS).",
+      "test_suites": [
+        "PHYS"
+      ],
+      "release_target": "V1.8 / Post depth",
+      "source": "M§96",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-007",
+      "test_contract_id": "TEST-REQ-UNI-007",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Website builder/CMS provides safe content blocks, versioned headless API, multisite and translation/editorial workflow.",
+      "acceptance": "Approved content version can publish in fa/en without tenant leak (EXT,UX).",
+      "test_suites": [
+        "EXT",
+        "UX"
+      ],
+      "release_target": "V1.7",
+      "source": "M§97",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-008",
+      "test_contract_id": "TEST-REQ-UNI-008",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Commerce site adds catalog, cart/checkout, order, tax/fulfillment/refund through eligible providers.",
+      "acceptance": "Purchase-to-return balances; unsupported corridor blocks checkout (PHYS,PAY).",
+      "test_suites": [
+        "PHYS",
+        "PAY"
+      ],
+      "release_target": "V1.8",
+      "source": "M§97",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-009",
+      "test_contract_id": "TEST-REQ-UNI-009",
+      "family": "Universal/industry capability contracts",
+      "requirement": "SEO metadata/sitemap/canonical/redirect controls are testable; no search ranking guarantee.",
+      "acceptance": "Crawlable artifact and redirect checks (UX).",
+      "test_suites": [
+        "UX"
+      ],
+      "release_target": "V1.7",
+      "source": "M§97",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-010",
+      "test_contract_id": "TEST-REQ-UNI-010",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Industry packs declare dependencies, data types, workflows, permissions, policy and conformance/version.",
+      "acceptance": "Two different packs coexist without tenant bleed (EXT,POL).",
+      "test_suites": [
+        "EXT",
+        "POL"
+      ],
+      "release_target": "V1.7",
+      "source": "M§99",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-011",
+      "test_contract_id": "TEST-REQ-UNI-011",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Banking integration is bounded to licensed partner APIs; no unlicensed core banking/custody claim.",
+      "acceptance": "Unsupported regulated action denied (POL,FIN).",
+      "test_suites": [
+        "POL",
+        "FIN"
+      ],
+      "release_target": "V1.9 / Post",
+      "source": "M§102",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-012",
+      "test_contract_id": "TEST-REQ-UNI-012",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Edge/offline device replay uses signed identity, bounded queue, conflict policy and no silent money/control actuation.",
+      "acceptance": "Offline duplicate converges or escalates (PHYS,OPS).",
+      "test_suites": [
+        "PHYS",
+        "OPS"
+      ],
+      "release_target": "V1.8 / Post",
+      "source": "M§105",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-013",
+      "test_contract_id": "TEST-REQ-UNI-013",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Advanced WMS/TMS, industrial control and specialist regulated systems remain partner/future contracts with exit/portability.",
+      "acceptance": "Capability mapped, no false GA (EXT,POL).",
+      "test_suites": [
+        "EXT",
+        "POL"
+      ],
+      "release_target": "Post",
+      "source": "M§77,94–96,102,105",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-014",
+      "test_contract_id": "TEST-REQ-UNI-014",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Device adapters cover barcode, scanner, camera and printer via declared capability, permission, offline queue and failure handling.",
+      "acceptance": "Duplicate scan does not double movement; denied device cannot print sensitive label (PHYS,AUTH).",
+      "test_suites": [
+        "PHYS",
+        "AUTH"
+      ],
+      "release_target": "V1.8 / Post device depth",
+      "source": "M§105",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-015",
+      "test_contract_id": "TEST-REQ-UNI-015",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Procurement RFQ, purchase order, supplier approval and commitment/receipt lifecycle is separate from customer order.",
+      "acceptance": "Canceled/partial PO releases budget commitment and matches AP/receipt (PHYS,BUD).",
+      "test_suites": [
+        "PHYS",
+        "BUD"
+      ],
+      "release_target": "V1.7/1.8",
+      "source": "M§68,94",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-016",
+      "test_contract_id": "TEST-REQ-UNI-016",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Warehouse operations own bin, lot/serial, pick/pack/stocktake and inventory movement authority.",
+      "acceptance": "Wrong-lot/duplicate pick denied; quantity and valuation reconcile (PHYS).",
+      "test_suites": [
+        "PHYS"
+      ],
+      "release_target": "V1.8",
+      "source": "M§94",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-017",
+      "test_contract_id": "TEST-REQ-UNI-017",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Logistics/shipment tracks carrier, handoff, partial delivery, exception, proof and return independently of stock ledger.",
+      "acceptance": "Lost parcel/partial shipment produces bounded recovery and customer evidence (PHYS).",
+      "test_suites": [
+        "PHYS"
+      ],
+      "release_target": "V1.8",
+      "source": "M§94",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-018",
+      "test_contract_id": "TEST-REQ-UNI-018",
+      "family": "Universal/industry capability contracts",
+      "requirement": "EAM owns physical asset maintenance schedule, work order, inspection and retirement with safety/OT boundary.",
+      "acceptance": "Overdue maintenance blocks configured unsafe use; digital asset register remains distinct (PHYS,OPS).",
+      "test_suites": [
+        "PHYS",
+        "OPS"
+      ],
+      "release_target": "V1.8 / Post depth",
+      "source": "M§95",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-019",
+      "test_contract_id": "TEST-REQ-UNI-019",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Site publication owns verified domains, preview, approval, schedule, rollback and public rendering isolation.",
+      "acceptance": "Invalid publish keeps prior site; lead links CRM with tenant provenance (EXT,UX).",
+      "test_suites": [
+        "EXT",
+        "UX"
+      ],
+      "release_target": "V1.7",
+      "source": "M§97",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-020",
+      "test_contract_id": "TEST-REQ-UNI-020",
+      "family": "Universal/industry capability contracts",
+      "requirement": "Agriculture/food lot trace and recall notification has a separate authority and source lineage from yield/planning.",
+      "acceptance": "Recalled lot identifies affected deliveries and freezes configured movement without certification claim (PHYS,POL).",
+      "test_suites": [
+        "PHYS",
+        "POL"
+      ],
+      "release_target": "V1.8 / Post depth",
+      "source": "M§96",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-UNI-021",
+      "test_contract_id": "TEST-REQ-UNI-021",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "Universal/industry capability contracts",
+      "requirement": "Commerce order dispute independently governs buyer/seller claim, evidence, scoped adjudication, settlement hold, decision, appeal and refund/reversal.",
+      "acceptance": "Partial delivery dispute preserves evidence and blocks premature settlement; authorized adjudication reconciles refund and ledger without deleting order history (PHYS,FIN).",
+      "test_suites": [
+        "PHYS",
+        "FIN"
+      ],
+      "release_target": "V1.8",
+      "source": "M§94"
+    },
+    {
+      "id": "REQ-UNI-022",
+      "test_contract_id": "TEST-REQ-UNI-022",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "Universal/industry capability contracts",
+      "requirement": "Stocktake adjustment and inventory valuation/COGS independently version counting evidence, cost method, period and journal reconciliation.",
+      "acceptance": "Count variance requires approval; receipt/return/revaluation posts balanced corrections and ledger value matches independently computed inventory roll-forward (PHYS,FIN).",
+      "test_suites": [
+        "PHYS",
+        "FIN"
+      ],
+      "release_target": "V1.8",
+      "source": "M§94,103"
+    },
+    {
+      "id": "REQ-TRU-001",
+      "test_contract_id": "TEST-REQ-TRU-001",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Classify every data category and processing flow by purpose, sensitivity, retention and approved minimum fields before collection.",
+      "acceptance": "Forbidden/unnecessary field is rejected at intake and excluded from derived export; classification changes are versioned (DATA,AUTH).",
+      "test_suites": [
+        "DATA",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§54,55; V7/07",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-002",
+      "test_contract_id": "TEST-REQ-TRU-002",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Maintain threat model, SBOM/license/supply-chain controls and vulnerability triage with current applicability review.",
+      "acceptance": "P0/P1 vulnerability blocks release, provenance reconstructs (OPS,AUTO).",
+      "test_suites": [
+        "OPS",
+        "AUTO"
+      ],
+      "release_target": "V1.0",
+      "source": "M§54; V7/07",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-003",
+      "test_contract_id": "TEST-REQ-TRU-003",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Purpose/consent and data-subject rights govern scoped access, correction, export and downstream processor actions.",
+      "acceptance": "Withdrawal/rights request propagates without cross-tenant exposure (DATA,AUTH).",
+      "test_suites": [
+        "DATA",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§55,86",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-004",
+      "test_contract_id": "TEST-REQ-TRU-004",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Keep minimal immutable audit envelope separately from erasable personal payload, access and retention controls.",
+      "acceptance": "Erasure does not break accounting evidence or reappear (DATA,FIN).",
+      "test_suites": [
+        "DATA",
+        "FIN"
+      ],
+      "release_target": "V1.0",
+      "source": "M§54,55,86",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-005",
+      "test_contract_id": "TEST-REQ-TRU-005",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Residency and cross-border processing use policy-bound location and processor evidence, including backup/support/AI.",
+      "acceptance": "Disallowed processor route denied (POL,DATA).",
+      "test_suites": [
+        "POL",
+        "DATA"
+      ],
+      "release_target": "V1.2",
+      "source": "M§55,98; V7/07",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-006",
+      "test_contract_id": "TEST-REQ-TRU-006",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Target WCAG 2.2 AA across relevant web journeys; keyboard, screen reader, zoom, contrast and errors.",
+      "acceptance": "Human + automation critical flows zero blockers (UX).",
+      "test_suites": [
+        "UX"
+      ],
+      "release_target": "V1.0 onward",
+      "source": "M§52; V7/07",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-007",
+      "test_contract_id": "TEST-REQ-TRU-007",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Persian RTL/English LTR and accessible number, date, money and bidirectional text are tested.",
+      "acceptance": "GJ-01A completion both languages (UX).",
+      "test_suites": [
+        "UX"
+      ],
+      "release_target": "V1.0",
+      "source": "M§52,87",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-008",
+      "test_contract_id": "TEST-REQ-TRU-008",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Marketing/website claims carry dated substantiation, scope and expiry; no undocumented ROI, law or ready country.",
+      "acceptance": "Unsupported claim cannot publish (AUTO).",
+      "test_suites": [
+        "AUTO"
+      ],
+      "release_target": "V1.6",
+      "source": "V7/05,09",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-009",
+      "test_contract_id": "TEST-REQ-TRU-009",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "GTM protects initial ICP, onboarding, retention and buyer/user outcome evidence; pricing/brand owner approved.",
+      "acceptance": "Real partner evidence before commercial GA (WORK).",
+      "test_suites": [
+        "WORK"
+      ],
+      "release_target": "V1.6",
+      "source": "M§3,58; V7/05",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-010",
+      "test_contract_id": "TEST-REQ-TRU-010",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Trust/safety detects and triages suspected fraud/abuse with proportionate scoped enforcement and audit.",
+      "acceptance": "Suspicious activity throttle does not expose reporter or unrelated tenant (POL,AUTH).",
+      "test_suites": [
+        "POL",
+        "AUTH"
+      ],
+      "release_target": "V1.2",
+      "source": "M§46",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-011",
+      "test_contract_id": "TEST-REQ-TRU-011",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Asset Management independently tracks domains/hosting/servers/repos/DNS/certificates/licenses/APIs/devices, owner/provider/client/project/entity/cost/purchase/renewal/expiry/warranty/lifecycle/reminders/audit.",
+      "acceptance": "Each asset class survives transfer/expiry with scoped reminders; asset has secret reference, never value (AST,AUTH).",
+      "test_suites": [
+        "AST",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§35",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-012",
+      "test_contract_id": "TEST-REQ-TRU-012",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Import validates mapping, duplicates, scope, preview/dry-run, atomic/recoverable batches, reconciliation and reversible correction of a completed import without deleting posted truth.",
+      "acceptance": "Bad row does not corrupt tenant; a completed bad import can be undone or compensated with audit and independent ledger reconciliation (DATA,TEN).",
+      "test_suites": [
+        "DATA",
+        "TEN"
+      ],
+      "release_target": "V1.1",
+      "source": "M§73",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-013",
+      "test_contract_id": "TEST-REQ-TRU-013",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Secrets Vault separately enforces reference-only assets, least-privilege scoped capability access, environment isolation, rotation/revocation/expiry, audit and emergency rotation.",
+      "acceptance": "Sentinel never in general AI/browser/log/export; revoked/wrong-env capability denied (VLT,AUTH).",
+      "test_suites": [
+        "VLT",
+        "AUTH"
+      ],
+      "release_target": "V1.0",
+      "source": "M§35,54",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-014",
+      "test_contract_id": "TEST-REQ-TRU-014",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Security incident response separately governs restricted evidence, containment, notification applicability, recovery and review linked to operational incident without exposing secret detail.",
+      "acceptance": "Simulated breach keeps chain-of-custody; unauthorized status cannot declare report complete (SEC,OPS).",
+      "test_suites": [
+        "SEC",
+        "OPS"
+      ],
+      "release_target": "V1.0",
+      "source": "M§54,72; V7/07",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-015",
+      "test_contract_id": "TEST-REQ-TRU-015",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Retention, deletion, lawful hold and restore tombstones have versioned policy distinct from consent/rights intake.",
+      "acceptance": "Expired media and derivative erased; lawful hold reviewed; restore does not resurrect (DATA,OPS).",
+      "test_suites": [
+        "DATA",
+        "OPS"
+      ],
+      "release_target": "V1.0",
+      "source": "M§55,86",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-016",
+      "test_contract_id": "TEST-REQ-TRU-016",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Export/portability provides authorized machine-readable scoped data, source refs and explicit legal-retention/hold exception disclosure independently of import.",
+      "acceptance": "Round-trip where defined; retained or excluded fields and their reviewable basis are disclosed without leaking restricted data (DATA,EXT).",
+      "test_suites": [
+        "DATA",
+        "EXT"
+      ],
+      "release_target": "V1.1",
+      "source": "M§73,117",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-017",
+      "test_contract_id": "TEST-REQ-TRU-017",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Report/dispute/appeal lifecycle provides notice, reviewer separation, contestability and reversible proportionate remedy.",
+      "acceptance": "False positive restored with evidence; disputant cannot self-approve (POL,AUTH).",
+      "test_suites": [
+        "POL",
+        "AUTH"
+      ],
+      "release_target": "V1.2",
+      "source": "M§46",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-018",
+      "test_contract_id": "TEST-REQ-TRU-018",
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Network integrity detects duplicate/fake profile and consent manipulation without cross-tenant raw pooling.",
+      "acceptance": "Duplicate candidate review does not silently expose private HR data (POL,TEN).",
+      "test_suites": [
+        "POL",
+        "TEN"
+      ],
+      "release_target": "V1.2",
+      "source": "M§46",
+      "state": "specified",
+      "implementation_evidence": null
+    },
+    {
+      "id": "REQ-TRU-019",
+      "test_contract_id": "TEST-REQ-TRU-019",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Encrypt customer data in transit/at rest with scoped key management, environment/tenant separation, authorized rotation, revocation and restore procedure independently of Vault secret grants.",
+      "acceptance": "Wrong-region/key principal cannot decrypt; rotation and backup restore preserve authorized access without plaintext log or permanent key loss (SEC,OPS).",
+      "test_suites": [
+        "SEC",
+        "OPS"
+      ],
+      "release_target": "V1.0",
+      "source": "M§54,55; V7/07"
+    },
+    {
+      "id": "REQ-TRU-020",
+      "test_contract_id": "TEST-REQ-TRU-020",
+      "state": "specified",
+      "implementation_evidence": null,
+      "family": "Security, privacy, accessibility and market truth",
+      "requirement": "Redact and control sensitive data egress to logs, prompts, traces, browser, support export and external processors by approved data class and purpose.",
+      "acceptance": "Secret and personal-data sentinels never reach disallowed sink even on exception, retry, diagnostic dump or AI-off fallback (SEC,AI).",
+      "test_suites": [
+        "SEC",
+        "AI"
+      ],
+      "release_target": "V1.0",
+      "source": "M§54,55; V7/07"
+    }
+  ]
+}

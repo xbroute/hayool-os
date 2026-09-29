@@ -1,0 +1,386 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/xbroute/hayool-os/blob/main/bootstrap/engrun.schema.json",
+  "title": "Hayool M0 Engineering Run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "pr_number",
+    "mode",
+    "ci_mode",
+    "repository",
+    "branch",
+    "base_sha",
+    "target_sha",
+    "policy_sha",
+    "decided_at",
+    "changed_paths",
+    "risk",
+    "writer",
+    "reviewers",
+    "hard_checks",
+    "trusted_gate",
+    "limits",
+    "kill_switch",
+    "merge_performed",
+    "deployment_performed",
+    "result"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 3
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^ENG-RUN-[A-Za-z0-9_-]+$"
+    },
+    "pr_number": {"type": "integer", "minimum": 1},
+    "mode": {
+      "const": "shadow"
+    },
+    "ci_mode": {
+      "enum": ["legacy_workflow_run", "protected_main_pr_target"]
+    },
+    "repository": {
+      "const": "xbroute/hayool-os"
+    },
+    "branch": {
+      "type": "string",
+      "pattern": "^codex/"
+    },
+    "base_sha": {
+      "$ref": "#/$defs/sha"
+    },
+    "target_sha": {
+      "$ref": "#/$defs/sha"
+    },
+    "policy_sha": {
+      "$ref": "#/$defs/sha"
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "changed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "risk": {
+      "enum": [
+        "R0",
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ]
+    },
+    "writer": {
+      "$ref": "#/$defs/actor"
+    },
+    "reviewers": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "$ref": "#/$defs/reviewer"
+      }
+    },
+    "hard_checks": {
+      "type": "array",
+      "minItems": 9,
+      "items": {
+        "$ref": "#/$defs/check"
+      }
+    },
+    "trusted_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "run_attempt", "artifact_id", "report_path", "report_sha256"],
+      "properties": {
+        "run_id": {"type": "integer", "minimum": 1},
+        "run_attempt": {"type": "integer", "minimum": 1},
+        "artifact_id": {"type": "integer", "minimum": 1},
+        "report_path": {"type": "string", "minLength": 1},
+        "report_sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repair_iterations",
+        "elapsed_seconds",
+        "external_cost_usd",
+        "external_cost_cap_usd"
+      ],
+      "properties": {
+        "repair_iterations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "elapsed_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3600
+        },
+        "external_cost_usd": {
+          "const": 0
+        },
+        "external_cost_cap_usd": {
+          "const": 0
+        }
+      }
+    },
+    "kill_switch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engaged",
+        "autonomous_writes_enabled",
+        "merge_enabled",
+        "deploy_enabled",
+        "external_calls_enabled"
+      ],
+      "properties": {
+        "engaged": {
+          "type": "boolean"
+        },
+        "autonomous_writes_enabled": {
+          "const": false
+        },
+        "merge_enabled": {
+          "const": false
+        },
+        "deploy_enabled": {
+          "const": false
+        },
+        "external_calls_enabled": {
+          "const": false
+        }
+      }
+    },
+    "merge_performed": {
+      "const": false
+    },
+    "deployment_performed": {
+      "const": false
+    },
+    "result": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "PENDING"
+      ]
+    }
+  },
+  "$defs": {
+    "sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "branch",
+        "read_only",
+        "lease_issued_at",
+        "lease_expires_at",
+        "requested_model",
+        "effective_model",
+        "gateway",
+        "requested_provider",
+        "effective_provider",
+        "identity_verified",
+        "session_id",
+        "github_login",
+        "commit_execution_id",
+        "sha_execution_id",
+        "commit_at",
+        "sha_observed_at"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branch": {
+          "type": "string"
+        },
+        "read_only": {
+          "const": false
+        },
+        "lease_issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lease_expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "requested_model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effective_model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gateway": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requested_provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effective_provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "identity_verified": {
+          "type": "boolean"
+        },
+        "session_id": {"type": "string", "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"},
+        "github_login": {"type": "string", "pattern": "^[A-Za-z0-9-]+$"},
+        "commit_execution_id": {"type": "string", "pattern": "^exec-[0-9a-f-]{36}$"},
+        "sha_execution_id": {"type": "string", "pattern": "^exec-[0-9a-f-]{36}$"},
+        "commit_at": {"type": "string", "format": "date-time"},
+        "sha_observed_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "read_only",
+        "target_sha",
+        "verdict",
+        "requested_model",
+        "effective_model",
+        "report_path",
+        "report_sha256",
+        "gateway",
+        "requested_provider",
+        "effective_provider",
+        "identity_verified",
+        "session_id",
+        "agent_path",
+        "response_item_id",
+        "findings"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "read_only": {
+          "const": true
+        },
+        "target_sha": {
+          "$ref": "#/$defs/sha"
+        },
+        "verdict": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "PENDING"
+          ]
+        },
+        "requested_model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effective_model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "report_path": {
+          "type": "string"
+        },
+        "report_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "gateway": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requested_provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effective_provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "identity_verified": {
+          "type": "boolean"
+        },
+        "session_id": {"type": "string", "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"},
+        "agent_path": {"type": "string", "pattern": "^/root/review_"},
+        "response_item_id": {"type": "string", "pattern": "^msg_"},
+        "findings": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/finding"}
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "severity", "status", "target_sha", "summary"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["P0", "P1", "P2", "P3"]},
+        "status": {"enum": ["OPEN", "CLOSED"]},
+        "target_sha": {"$ref": "#/$defs/sha"},
+        "summary": {"type": "string", "minLength": 1},
+        "closure_evidence": {"type": "string", "minLength": 1}
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "status",
+        "target_sha",
+        "report_path",
+        "report_sha256"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "PENDING"
+          ]
+        },
+        "target_sha": {
+          "$ref": "#/$defs/sha"
+        },
+        "report_path": {
+          "type": "string"
+        },
+        "report_sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

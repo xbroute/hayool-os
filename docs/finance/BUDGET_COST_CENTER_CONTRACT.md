@@ -1,0 +1,26 @@
+# Budget, Cost Center and Profit Center — V1.0 domain contract
+
+Status: specified design, not an accounting implementation. Owner: Finance/Budget module; Organization owns the legal entity/branch/department/team hierarchy, Finance owns accounting dimensions and actual financial truth. ADR-027; REQ-FIN-018–021; TEST-REQ-FIN-018–021 and BUD suite. A budget is an approved control plan, **never** a substitute for the double-entry ledger or provider settlement.
+
+## Data and scopes
+
+BudgetPlan: tenant, legal entity, branch/department/team/project where applicable, cost center, optional profit center, period [from,to), calendar/timezone, currency, scenario, version, owner and status. Multiple scoped plans can coexist only with explicit allocation/roll-up rule to avoid double counting. The dimension tree is effective-dated; a project's cost-center assignment changes prospectively with auditable reallocation. Cost center captures responsibility for spend, profit center for attributable revenue/cost; neither grants accounting access by itself. Missing organizational grant denies cross-entity budget detail. Required at V1.0: legal entity, branch, department, team, project and cost-center allocation or explicit unassigned case; profit-center reporting and assignment. The plan stores original proposal, approved baseline and revised versions with effective date, reason, approver and prior link, not one mutable amount.
+
+Line: account/category, optional resource/vendor/work item, period, currency and approved amount. Exposure separates `committed` (an approved budget reservation or obligation in V1.0; full purchase-order integration arrives later, always deduplicated by source), `actual` (posted ledger lines mapped to approved accounting dimensions), and `forecast` (versioned expected remainder or estimate-at-completion). A pending payment, invoice or time entry is not automatically an actual; decide recognition by the reviewed accounting mapping. Each projected value keeps source, rule, timestamp, currency/FX version and freshness. Negative budget/credit/refund adjustments preserve sign and lineage. Consumption uses explicit policy: e.g. `committed_open + actual`; settled commitment is released or transformed without counting it twice. Currency conversion for reporting uses versioned FX snapshot; transaction-currency budget is never silently merged into another currency.
+
+## Lifecycle and authority
+
+`draft -> submitted -> approved -> active -> revised/superseded -> closed` with rejected/cancelled branches. A revised budget preserves original and approved baselines. Segregate proposer, approver and poster per configurable threshold; approval binds plan version, scope, currency, amount, purpose and expiry. Threshold rules resolve the most restrictive applicable legal entity/branch/department/team/project/cost-center policy; cannot bypass by splitting one request, moving dimension after approval or replaying. Over-budget requests become block/warn/escalate only under approved organization policy, never defaulted to allow by AI. Reservation is atomic with idempotency and available headroom; canceled/expired order releases commitment. A new revision does not rewrite committed or actual history.
+
+Variance: approved/revised vs committed, actual, forecast and estimate-at-completion, by period/dimension/currency; label which baseline and accounting basis is compared. Profitability joins approved project price, recognized/collected revenue and ledger-backed cost under the same legal entity, project and FX/version context. Budget variance is not a profit measure; financial margin remains governed by FIN rules. Material variance creates a review action, never an invented journal.
+
+## Independent acceptance contracts
+
+| Test contract | Given / action | Pass oracle |
+|---|---|---|
+| TEST-REQ-FIN-018 | Create original, approve, revise and close two periods for entity/branch/department/team/project with different currencies. | Original, approved and revised immutable versions reconstruct; unauthorized dimension or mismatched currency denied. |
+| TEST-REQ-FIN-019 | Assign/reassign cost and profit centers across projects/entities and change hierarchy effective date. | Roll-up has no duplicate/unauthorized amount; old ledger mapping remains reproducible; unassigned case visible. |
+| TEST-REQ-FIN-020 | Two concurrent commitments, partial receipt, invoice, refund, period close and FX change. | Consumption never double-counts released commitment; actual equals independently queried posted ledger dimensions; forecast labeled, totals reconcile exactly. |
+| TEST-REQ-FIN-021 | Cross threshold, split purchase, stale approval and adverse variance. | Unauthorized purchase blocked/escalated, split evasion detected, approval invalidated on version change; variance and project margin drill to source. |
+
+Negative and recovery variants include duplicate/reordered events, deleted project, changed FX, late invoice, failed external payment and restore. The BUD suite requires property checks for roll-up conservation, authorization and no double consumption; executed evidence includes frozen rules, independent ledger fixture, approval/audit trail and exact SHA. No regulatory accounting use without qualified review.

@@ -1,0 +1,7 @@
+# Commerce order dispute — V1.8 contract
+
+Status: specified. REQ-UNI-021, TEST-REQ-UNI-021 and PHYS/FIN suites. Customer order/fulfillment (REQ-UNI-004), ticket, operational incident, labor dispute and marketplace-app billing dispute have distinct IDs, owners and settlement effects.
+
+`opened -> evidence-gathering -> held/under-review -> decision -> appealed/revised -> closed` stores buyer/seller, order/line/shipment/return/payment references, disputed quantities and amounts, reason, documents, time limit, jurisdiction/provider policy and permissions. A dispute does not by itself overwrite delivery, stock, payment or ledger truth. Financial hold/release/partial refund/chargeback requires approved merchant/payment policy and exact reconciliation; unknown provider result remains pending. Buyer and seller can submit scoped evidence; adjudicator separation and appeal preserve original decisions. When a provider controls funds, Hayool records only actual provider outcome, never claims escrow by inference.
+
+`TEST-REQ-UNI-021` injects partial shipment and conflicting evidence, concurrent refund attempt, late provider callback, accepted/denied appeal and wrong-tenant viewer. Verify premature settlement blocked, original evidence retained with redactions, authorized decision/reversal exact once, return quantity and accounting reconcile independently, and no unsupported country/merchant path executes.

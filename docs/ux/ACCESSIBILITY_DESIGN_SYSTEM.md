@@ -1,0 +1,15 @@
+# Product experience, accessibility and localization
+
+ADR-022. WCAG 2.2 AA design target for relevant web surfaces; legal procurement mappings separate. This is not a certification.
+
+Role workspaces expose My Day, relevant records/actions/approvals and governed metrics. Intent-first and workspace-first converge on identical permissions and typed commands. Owner/finance/HR/sales/PM/worker/client/builder/developer/platform admin have explicit navigation boundaries. No giant universal module menu. Public experience avoids ERP/implementation jargon.
+
+Design tokens: semantic color/status, spacing, type, focus, density, motion, elevation and logical direction. Tenant brand may change safe tokens; validator prevents contrast/focus loss. Light/dark/density retain semantics. Components: accessible forms, tables, dialogs, combobox, tree, calendar, kanban/list alternative, charts plus table/text alternatives, approvals, errors, file upload, progress and async jobs. No drag-only operation; no color-only state. Accessible authentication supports password manager/paste and non-cognitive alternatives where applicable.
+
+Persian RTL and English LTR are equal acceptance fixtures. Use logical CSS/direction-aware icons, bidi isolation for IDs/currency/URLs, Persian/Arabic normalization in search without modifying authoritative names, locale plural/date/number/currency/units, Jalali civil-date UX with canonical date semantics and IANA timezones. Do not assume one surname, Latin address or two currency decimals. Legal translations are versioned/approved, AI translations draft only.
+
+Every key view has loading, empty, validation, permission denial, server error, slow/offline, success and partial-save state. Errors explain what was saved and safe next action. AI labels distinguish fact/calculation/draft/prediction/recommendation with provenance, missing facts and edit/reject route. Explainability accessible to candidates without exposing confidential fraud internals.
+
+Test target: keyboard-only complete golden journey; focus visible/logical/returned after modal; screen reader names/roles/live state; 200% zoom and 400% reflow at relevant viewport; text contrast >=4.5:1 (large text >=3:1), non-text contrast >=3:1 where criterion applies; minimum target size per WCAG 2.2 AA including exceptions evaluated explicitly; reduced motion; captions/transcripts when media requires. Automated axe-like checks plus manual assistive-technology review; zero critical/serious automated violations is necessary, not sufficient for AA.
+
+Low-bandwidth profile: initial routes usable with incremental data, resumable upload/jobs, explicit sync status, retry without duplicate transaction. Offline field forms remain drafts until server validates current policy; no silent data loss. Website builder and extension UI run the same checks. Product analytics measures time-to-first-value, workflow completion, support friction and task success, consent/deployment policy aware; disabled On-Prem telemetry stays disabled.

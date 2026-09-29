@@ -1,0 +1,777 @@
+{
+  "schema": "hayool.package_manifest.v1",
+  "package": "Hayool OS V7.2 Final Pre-code Source of Truth",
+  "created_utc": "2026-09-26",
+  "hash_algorithm": "sha256",
+  "manifest_self_excluded": true,
+  "design_digest_scope": "All files except archive/**, docs/evidence/** and PACKAGE_MANIFEST.json; sort relative POSIX paths; SHA256(path UTF-8 + NUL + raw SHA256(file) per item).",
+  "design_review_digest": "2b11e2b7392a25c40ba4b7c6dcae33f4dab1046d631558881179edaa38b800b6",
+  "source_files": 61,
+  "requirements": 194,
+  "adrs": 31,
+  "adrs_active": 30,
+  "adrs_superseded": 1,
+  "predecessor_v71_sha256": "4d1ae95c31030e63e186259e88481c925f736e8566abeb30e9b86033a0ccd65d",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 1218,
+      "sha256": "fd1c519e0fce2b0cbf5fa56acd5a095db5804940468e18ce1d69938e1c22d01e"
+    },
+    {
+      "path": "CLAUDE.md",
+      "bytes": 385,
+      "sha256": "2fd81f7865abc50e15d654cbbd40b61fb3fd596dbf6e789df4543471230606da"
+    },
+    {
+      "path": "NEXT_ACTIONS.md",
+      "bytes": 2606,
+      "sha256": "f432c3d12531a2a3f44c655e0e60626c5c86580d6985d9414a747f954697677e"
+    },
+    {
+      "path": "PROJECT_STATE.md",
+      "bytes": 3039,
+      "sha256": "6cf87fc253f2ff0fec3dfea973f4531d651dd8a496fc2a24c74337586c2dd199"
+    },
+    {
+      "path": "README_FA.md",
+      "bytes": 4209,
+      "sha256": "eb8eeaa8213809408a7c592676c290e8d6495eb5419a87e870918a3172a2fdf1"
+    },
+    {
+      "path": "SOURCE_MANIFEST.json",
+      "bytes": 31756,
+      "sha256": "bcdaedb6d435875ee9024f6f6cb451513a63b024d4ebf7def2f56bb49cf97442"
+    },
+    {
+      "path": "archive/V7/00_README_V7.md",
+      "bytes": 3778,
+      "sha256": "3607f9fb681551b2aaf1291f812a031814a7a29b0ee59b27ca462ddab940a784"
+    },
+    {
+      "path": "archive/V7/01_V7_EXECUTIVE_REBASELINE.md",
+      "bytes": 6558,
+      "sha256": "3f14808bd90f1bec6aac402fad32bd4b64b564a7e9a472d5f623ec766967a613"
+    },
+    {
+      "path": "archive/V7/02_GLOBAL_JURISDICTION_ELIGIBILITY_AND_COUNTRY_PACK_SPEC.md",
+      "bytes": 9738,
+      "sha256": "d9cb2a71c45f4ac20d7563f86d09870a54285835f00ea348999bd3923fc06593"
+    },
+    {
+      "path": "archive/V7/03_OUTCOME_RELEASE_TRAIN_AND_AUTONOMOUS_SDLC_SPEC.md",
+      "bytes": 9558,
+      "sha256": "2b56ea540b9cb3fbddb8ddfc41cc467c24ab5c233def63e28bbd20efaeafcef0"
+    },
+    {
+      "path": "archive/V7/04_PLATFORM_ARCHITECTURE_COMPLETENESS_SPEC.md",
+      "bytes": 7367,
+      "sha256": "1d0a1c44482b60b77d50c991b7c1078af07d0a0d62c2f83ee0cc0e8ea6bcbcc0"
+    },
+    {
+      "path": "archive/V7/05_MARKET_BRAND_PSYCHOLOGY_VALUE_GTM_SPEC.md",
+      "bytes": 5708,
+      "sha256": "d97fdc49c7761d1d6ce3902a319a7c2a7a2162a5cfb1765e468333ddcbe6e8ef"
+    },
+    {
+      "path": "archive/V7/06_FINANCE_ECONOMICS_PRICING_AND_CAPITAL_SPEC.md",
+      "bytes": 4230,
+      "sha256": "df6f8e89b6339fb4840031074edc0ff5133c43b08f32efebf95b34a4cf02a0ab"
+    },
+    {
+      "path": "archive/V7/07_SECURITY_PRIVACY_ACCESSIBILITY_COMPLIANCE_SPEC.md",
+      "bytes": 5094,
+      "sha256": "4924df079b6f53ee189fe6b5947e7d4d693aefb31ce4527ac7aac9188b308b15"
+    },
+    {
+      "path": "archive/V7/08_ECOSYSTEM_DEVELOPER_PLATFORM_TRUST_COMPACT.md",
+      "bytes": 4482,
+      "sha256": "6353e1c35ec56d904b6d06e9460914cc04f8f9a5013714fc8049bf44b92bf186"
+    },
+    {
+      "path": "archive/V7/09_REQUIREMENTS_ADR_TRACEABILITY_AND_EVIDENCE_SPEC.md",
+      "bytes": 3787,
+      "sha256": "14584fb7d6c2273c5f8179f84eb4a020e733dea97b97c6c78baaa9d0cc93578f"
+    },
+    {
+      "path": "archive/V7/13_V7_REBASELINE_CHANGELOG.md",
+      "bytes": 2369,
+      "sha256": "69f85ac29fdb07a8dd7269b5e7c116255b79d7de72bd2cc405b567bce6ff24dc"
+    },
+    {
+      "path": "archive/V7/14_V7_SCORECARD_AND_ACCEPTANCE_GATES.md",
+      "bytes": 3381,
+      "sha256": "eddaaae6eee8544fb300e8758e4a0530f267b24f094a1f82f5a4d49b5f4ac874"
+    },
+    {
+      "path": "archive/V7.1/DOCUMENT_REVIEW_V7_1.md",
+      "bytes": 1845,
+      "sha256": "09f40f3ff69513c92cad90a15ad36fd8631480d877acb8a00463782dbf16d62b"
+    },
+    {
+      "path": "archive/V7.1/Hayool-OS-V7.1-Source-of-Truth.zip",
+      "bytes": 505895,
+      "sha256": "4d1ae95c31030e63e186259e88481c925f736e8566abeb30e9b86033a0ccd65d"
+    },
+    {
+      "path": "archive/sources/V6/.github/PULL_REQUEST_TEMPLATE.md",
+      "bytes": 4362,
+      "sha256": "968cdf0ae68a4bca5f81014701410b56ea2c0d78a432077e824c87b101f38c30"
+    },
+    {
+      "path": "archive/sources/V6/AGENTS.md",
+      "bytes": 3582,
+      "sha256": "10072cec3fd22be919c6ba32ef754f212c22cc57c6067bd52dcff9923d8ef28a"
+    },
+    {
+      "path": "archive/sources/V6/BOOTSTRAP_README.md",
+      "bytes": 1316,
+      "sha256": "cccaf36acb94bae908d3e69b7c5e01b93181bfe7804678bc24d06bbab3998ca8"
+    },
+    {
+      "path": "archive/sources/V6/CLAUDE.md",
+      "bytes": 5331,
+      "sha256": "f672797d0eec9240dbfc9e7ccbd636d19559c859f141c5b34aa6548395667222"
+    },
+    {
+      "path": "archive/sources/V6/docs/SOURCE_OF_TRUTH_INDEX.md",
+      "bytes": 2898,
+      "sha256": "639786170605b5a172f4950066dff042122311bece826da911421c5e2dc11be7"
+    },
+    {
+      "path": "archive/sources/V6/docs/ai/AI_USE_COST_GOVERNANCE_SPEC.md",
+      "bytes": 6308,
+      "sha256": "4c611559450ce71fe3faaa85a0caa541ad27efa32191022192c1436e3837750b"
+    },
+    {
+      "path": "archive/sources/V6/docs/ai/ALGORITHM_SOLVER_DECISION_FABRIC_SPEC.md",
+      "bytes": 3995,
+      "sha256": "1366576e7a7aaa4fbfc6ea8c044677ec2df87264ed5a1caa5da031bbaa799282"
+    },
+    {
+      "path": "archive/sources/V6/docs/ai/JEV_DECISION_ENGINE_SPEC.md",
+      "bytes": 19370,
+      "sha256": "1585101aa4da825f5329c167987b3936596fcde1c7a078fd52419ed81833c5b8"
+    },
+    {
+      "path": "archive/sources/V6/docs/compliance/EMPLOYMENT_AI_GOVERNANCE_SPEC.md",
+      "bytes": 6547,
+      "sha256": "d9ae25edf54577426b7b65144ac708c5237dd921eef322d2b4924382c457db19"
+    },
+    {
+      "path": "archive/sources/V6/docs/data/LEARNING_INTELLIGENCE_FLYWHEEL_SPEC.md",
+      "bytes": 11920,
+      "sha256": "95f1cde7119620164b9ad9a64f1dd007b04c6966650e0d9483c0d279a2ac9f6b"
+    },
+    {
+      "path": "archive/sources/V6/docs/data/WORK_GRAPH_AND_CAPABILITY_ONTOLOGY_SPEC.md",
+      "bytes": 6024,
+      "sha256": "46a5976f5ee5573e4075d308795e8b1028b80c49a7c69ab19f55d869e63f94c7"
+    },
+    {
+      "path": "archive/sources/V6/docs/domains/AGRICULTURE_FOOD_TRACEABILITY_PACK_SPEC.md",
+      "bytes": 2905,
+      "sha256": "5a3b4fc0693f5a75450112a8777ef60aa9b1271ca4a0fc5dc6faffb02a55d96d"
+    },
+    {
+      "path": "archive/sources/V6/docs/domains/BANKING_FINANCIAL_SERVICES_BOUNDARY_SPEC.md",
+      "bytes": 2165,
+      "sha256": "fd71d3f800171ab0d951937136325b35a09a5236d0465e917e0e6f984c70c399"
+    },
+    {
+      "path": "archive/sources/V6/docs/domains/COMMERCE_PROCUREMENT_INVENTORY_LOGISTICS_SPEC.md",
+      "bytes": 5842,
+      "sha256": "0db698fb177a92d2f4e13e1861b781cb4f85b8d9613c0366437ab83aed48b156"
+    },
+    {
+      "path": "archive/sources/V6/docs/domains/MANUFACTURING_ASSET_IOT_EDGE_SPEC.md",
+      "bytes": 4113,
+      "sha256": "795be301b8ea8ef9a228b40b822058a376855e28e16c96f96e78c9aaf56afc89"
+    },
+    {
+      "path": "archive/sources/V6/docs/domains/WEBSITE_CMS_COMMERCE_SEO_SPEC.md",
+      "bytes": 3213,
+      "sha256": "ba30864457a480d564eb1923e4a08c2fe1207c4300acb52ed33cc3fa02332a0e"
+    },
+    {
+      "path": "archive/sources/V6/docs/engineering/AI_ENGINEERING_CONSTITUTION.md",
+      "bytes": 13510,
+      "sha256": "c69b9ee6eaf4985fc7490e82d5df0d2c4ffedf91701e9a7c68c496bf2d185ed4"
+    },
+    {
+      "path": "archive/sources/V6/docs/engineering/AUTONOMOUS_SDLC_CONTROL_PLANE_SPEC.md",
+      "bytes": 21364,
+      "sha256": "8edd169eaf9a38b3ae9f0e6d0d3c47b372ef9a4a0a06146fa5ea032e52d94c6b"
+    },
+    {
+      "path": "archive/sources/V6/docs/engineering/ENGINEERING_GUARDRAILS.md",
+      "bytes": 29125,
+      "sha256": "3d230ec5b32d466e55135de3d847efa7a7a6c631d7301efdd65107b6feb05ccb"
+    },
+    {
+      "path": "archive/sources/V6/docs/market/MARKET_REGULATORY_RESEARCH_REFERENCES.md",
+      "bytes": 6043,
+      "sha256": "4ccf5473cbe321a1f23e1f178b2ac01cfb414ba8dafb281206bce2364bb0254d"
+    },
+    {
+      "path": "archive/sources/V6/docs/platform/DEVELOPER_PLATFORM_EXTENSION_RUNTIME_MARKETPLACE_SPEC.md",
+      "bytes": 14860,
+      "sha256": "910e7611bcf00f6a2c7423a819a03fb153d324f186d5e033f7a2d7a615c27b8d"
+    },
+    {
+      "path": "archive/sources/V6/docs/platform/GLOBAL_LOCALIZATION_COMPLIANCE_INTEROPERABILITY_SPEC.md",
+      "bytes": 6189,
+      "sha256": "4df0d8d553eb898645d44800a673d3430055496054b03f998da702975689ebbb"
+    },
+    {
+      "path": "archive/sources/V6/docs/platform/INDUSTRY_PACK_ARCHITECTURE_AND_CAPABILITY_MATRIX.md",
+      "bytes": 4698,
+      "sha256": "0fd5d10cff25454610beeab651641495990786af56e2cf1671547839ddc98d59"
+    },
+    {
+      "path": "archive/sources/V6/docs/platform/INTENT_TO_OUTCOME_ORCHESTRATION_SPEC.md",
+      "bytes": 7320,
+      "sha256": "a8ab408682f3426795e8ac32141cd9b26bb8eaf0420c3502966b8d3f936c8294"
+    },
+    {
+      "path": "archive/sources/V6/docs/platform/UNIVERSAL_BUSINESS_KERNEL_AND_STUDIO_SPEC.md",
+      "bytes": 9496,
+      "sha256": "b0cba8e24c5cc5b3677f6a841cb19eef1dba107e56bb2ace9a4afc7b4d47fd30"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/ECOSYSTEM_COMMUNITY_PARTNER_STRATEGY.md",
+      "bytes": 4641,
+      "sha256": "7b2e29a0d8dccbb20d32726fd9c0265cdc193b2c90f76adaea68fd19f44db0cb"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/GLOBAL_PRODUCT_EXPERIENCE_AND_PERSONA_WORKSPACES_SPEC.md",
+      "bytes": 3981,
+      "sha256": "42dc919c31281156fe13ba15e1f35dbe3692983b947fe87f5db8a3a059a8f855"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/GO_TO_MARKET_BRAND_MONETIZATION_SPEC.md",
+      "bytes": 10001,
+      "sha256": "ea7c86da6ce9c2af1803c94c59ca980ece308a086d6e2d938a18cec457ccd672"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/HAYOOL_OS_COMPREHENSIVE_BUSINESS_PLAN_FA.md",
+      "bytes": 18722,
+      "sha256": "7a1ee2315b7d7c2f0fcf90c095388c4b9345a74065e866ee7618fe74facb4198"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/HAYOOL_OS_EXECUTIVE_STRATEGIC_REVIEW_FA.md",
+      "bytes": 13214,
+      "sha256": "44f5d9e19be30fd24f6baddc47025f2da7324ff5daa581611cb22097d77937b5"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/HAYOOL_OS_MASTER_PRODUCT_ENGINEERING_SPEC.md",
+      "bytes": 41385,
+      "sha256": "77a951e78d866e5860385cd501fbef4eb480b3c0cb75a80bf1107d8b11c607fa"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/HAYOOL_OS_START_HERE_RUNBOOK.md",
+      "bytes": 43097,
+      "sha256": "6e45143fbe868670e556c19c0d8bcde05c44a071a00ae3c690e97012f1974271"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/HAYOOL_OS_V5_STRATEGIC_REBASELINE_FA.md",
+      "bytes": 8584,
+      "sha256": "953133de6bdb0c7a518424c81f3bf2f15a6523301aa5453797eb31b2b6106574"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/HAYOOL_OS_V6_STRATEGIC_REVIEW_FA.md",
+      "bytes": 9571,
+      "sha256": "dcaac05cbe24b0855010f2c718defbe6d93690b95813c0a1eeba63a39316cc5c"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/HAYOOL_WORKFORCE_BUSINESS_STRATEGY.md",
+      "bytes": 2276,
+      "sha256": "c91deafbe5565b804e0b13bb7095c8e668c0119bd7dc53935d0411eb62f6bb1f"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/OWNER_DECISION_SHEET.md",
+      "bytes": 2994,
+      "sha256": "08237819429c2e82ef38bf0d4307413317014da5cd0a9b7ed81f42bdb89d9ac8"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/PRICING_PROFIT_OPTIMIZATION_EXPERIMENTATION_SPEC.md",
+      "bytes": 7897,
+      "sha256": "af4ec222c18596f2267f2883ea2777e37575ad0c05d06e7f222b17e1561b461c"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/RELEASE_TRAIN_MARKET_READINESS_GATES.md",
+      "bytes": 4854,
+      "sha256": "642ad3d79a6a849ac65afebe0615ae5966451a94793533e595d6ca608f8e703d"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/STRATEGIC_RISK_REGISTER.md",
+      "bytes": 6042,
+      "sha256": "4178cd47579c300e45f107dab44284be784910589c92d59343fb90cc56df8bf8"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/TRUST_SAFETY_AND_MARKETPLACE_INTEGRITY_SPEC.md",
+      "bytes": 3893,
+      "sha256": "70535d6cc16e7c13fed9cfb6e9b96575a6fbcb6570a0c08bb9745611ac23f271"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/UNIT_ECONOMICS_FINANCIAL_MODEL_SPEC.md",
+      "bytes": 3941,
+      "sha256": "8be76d1d013f975f9be82b7cfc09d28bf7d87e53110f3095333910c76667ca24"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/V4_REBASELINE_CHANGELOG.md",
+      "bytes": 2366,
+      "sha256": "831d2979e9d3b2771f0545e63f9547bb2579d1b5556417d5412f8a4e111232b5"
+    },
+    {
+      "path": "archive/sources/V6/docs/product/V6_REBASELINE_CHANGELOG.md",
+      "bytes": 1743,
+      "sha256": "a0594b126c9e86c9cb63f8a565ac75f6da3b0d96e6febba7f428a26792a53e86"
+    },
+    {
+      "path": "archive/sources/V6/docs/prompts/M0_ARCHITECTURE_BOOTSTRAP_PROMPT.md",
+      "bytes": 10574,
+      "sha256": "d6d51d017f8f42ae364ebb2199773d133cee7ea52a1e65fd02323cf190f63de8"
+    },
+    {
+      "path": "archive/sources/V6/docs/prompts/M0_INDEPENDENT_ARCHITECTURE_GATE_PROMPT.md",
+      "bytes": 4229,
+      "sha256": "7baff1e099aa3c5168fa7fccd3a6a1fafbd7a87b720d7479332954ddc5bb1b5c"
+    },
+    {
+      "path": "archive/sources/V7/00_README_V7.md",
+      "bytes": 3674,
+      "sha256": "9ada13c6ae855098f8fc58eee56dfaf2e59bc116bc01051c37b9f7dfbb117323"
+    },
+    {
+      "path": "archive/sources/V7/01_V7_EXECUTIVE_REBASELINE.md",
+      "bytes": 6454,
+      "sha256": "d44f79cc87a09cc944123d4d4bd685bdbba7c41a138d98fb3da4b33c7f841056"
+    },
+    {
+      "path": "archive/sources/V7/02_GLOBAL_JURISDICTION_ELIGIBILITY_AND_COUNTRY_PACK_SPEC.md",
+      "bytes": 9634,
+      "sha256": "55d108ca081a9e31f9736241146bd2e98e61da04928febde547b0078c6726a74"
+    },
+    {
+      "path": "archive/sources/V7/03_OUTCOME_RELEASE_TRAIN_AND_AUTONOMOUS_SDLC_SPEC.md",
+      "bytes": 9454,
+      "sha256": "04cef1f5b4f4512a3cfd243bbd72cc4b6715270290787db9bea7cff79e6ed4cd"
+    },
+    {
+      "path": "archive/sources/V7/04_PLATFORM_ARCHITECTURE_COMPLETENESS_SPEC.md",
+      "bytes": 7263,
+      "sha256": "662f65aa385287b86bebc932950f3b1097a1d6620d24c5739544684ac701ef4e"
+    },
+    {
+      "path": "archive/sources/V7/05_MARKET_BRAND_PSYCHOLOGY_VALUE_GTM_SPEC.md",
+      "bytes": 5604,
+      "sha256": "a4aba585ed595fa6ff0e36c2dc9437ed5b439ff06d3921966791c76be5511a3c"
+    },
+    {
+      "path": "archive/sources/V7/06_FINANCE_ECONOMICS_PRICING_AND_CAPITAL_SPEC.md",
+      "bytes": 4126,
+      "sha256": "12dea1be4a6af3b57ac2064fb96e6a98705c34f9bc3423ed9a47bae965cfc35e"
+    },
+    {
+      "path": "archive/sources/V7/07_SECURITY_PRIVACY_ACCESSIBILITY_COMPLIANCE_SPEC.md",
+      "bytes": 4990,
+      "sha256": "6d009ff80a1c6f60378148a0500f0413c3ef0cd8ea42e6a3c03af360adec1b17"
+    },
+    {
+      "path": "archive/sources/V7/08_ECOSYSTEM_DEVELOPER_PLATFORM_TRUST_COMPACT.md",
+      "bytes": 4378,
+      "sha256": "3c76ef9d68d572df440571fc14629930b5c6119df909493d79a7802b91925b5e"
+    },
+    {
+      "path": "archive/sources/V7/09_REQUIREMENTS_ADR_TRACEABILITY_AND_EVIDENCE_SPEC.md",
+      "bytes": 3683,
+      "sha256": "724f504be8ec80a4a87ea7c3aad2022042da7e2dd77388c5a116f4e3d6b5d2c4"
+    },
+    {
+      "path": "archive/sources/V7/10_CHATGPT_WORK_MASTER_BUILD_PROMPT.md",
+      "bytes": 10426,
+      "sha256": "5cacb1a6c091f100ee8f38211cfbb12cab509a616a401c4213557be635f7bf9d"
+    },
+    {
+      "path": "archive/sources/V7/11_PROJECT_STATE_TEMPLATE.md",
+      "bytes": 1529,
+      "sha256": "8bf8f6662e03f3182890ae4bfa897a5f684ec29b0c9e4cc23ce76aed19978caf"
+    },
+    {
+      "path": "archive/sources/V7/12_NEXT_ACTIONS_TEMPLATE.md",
+      "bytes": 896,
+      "sha256": "57bbd2e1d8a77edbc1f307b2ea058c452245a02a52becadbabb424ce428b73f8"
+    },
+    {
+      "path": "archive/sources/V7/13_V7_REBASELINE_CHANGELOG.md",
+      "bytes": 2265,
+      "sha256": "2ec9c56797d6092c9b0ec9ef95740f21308b382c083e0cdb73833a387ce42919"
+    },
+    {
+      "path": "archive/sources/V7/14_V7_SCORECARD_AND_ACCEPTANCE_GATES.md",
+      "bytes": 3277,
+      "sha256": "ec0195df4e22b1c08c1b984e36ea36cbdfb518fac94b76971228774ff95b55cc"
+    },
+    {
+      "path": "archive/sources/V7/manifest.json",
+      "bytes": 838,
+      "sha256": "b2418b4c713ad3efc63d49400414b827c8576e10e2b050f45fe4a3529c576417"
+    },
+    {
+      "path": "docs/CONFLICT_RESOLUTIONS.md",
+      "bytes": 7816,
+      "sha256": "60d77742c458598c8afccb0e6cc3e6a155202e1ac0b3f069b1ab355c93ae93cd"
+    },
+    {
+      "path": "docs/OWNER_DECISIONS.md",
+      "bytes": 5829,
+      "sha256": "04f7678af3309632d519e36af1ac0bc5cedc9aaeb86ef89a954a58ad3b0a83b8"
+    },
+    {
+      "path": "docs/RISK_REGISTER.md",
+      "bytes": 3800,
+      "sha256": "9c692be3263d5767ff7428794e777ec53d85e2c9e8db384fdffb3d04cdfd541c"
+    },
+    {
+      "path": "docs/SOURCE_OF_TRUTH_INDEX.md",
+      "bytes": 4787,
+      "sha256": "bfbd340ff085122ed278ec754224ba635b58d6c614e639fda64d9999cec98a2a"
+    },
+    {
+      "path": "docs/V7_2_HARDENING_CHANGELOG.md",
+      "bytes": 2613,
+      "sha256": "1deb6dacba0ab0bafb56920c8317b4a8c5effd4e43c34fb5ef2b5420efca0ad3"
+    },
+    {
+      "path": "docs/adr/ADR_CATALOG.md",
+      "bytes": 11943,
+      "sha256": "1c2eebfda2b34ce889fda01b55d7ffd6e025ba5295ab7cf385f41a2a46c38c88"
+    },
+    {
+      "path": "docs/ai/AI_DATA_OUTCOME_ARCHITECTURE.md",
+      "bytes": 5329,
+      "sha256": "d9023f5dd4bfc7fb019cacd2c8f5800651b356083dd030afbc6af33a11fc6b8b"
+    },
+    {
+      "path": "docs/ai/AI_USE_COST_GOVERNANCE_SPEC.md",
+      "bytes": 6799,
+      "sha256": "e20cffac3298a8588dfdde99c6ace40f7ef54fe892f2496d0df6d10df86e4515"
+    },
+    {
+      "path": "docs/ai/ALGORITHM_SOLVER_DECISION_FABRIC_SPEC.md",
+      "bytes": 4484,
+      "sha256": "a8d56b30441ced5e34cfc6a09f1c0562e8dafb8c7a5a9b0b82826c92e31ddc97"
+    },
+    {
+      "path": "docs/ai/JEV_DECISION_ENGINE_SPEC.md",
+      "bytes": 19858,
+      "sha256": "52b40536faefca726755310672a066f7f8ded6032cb73d1d3b71c5778b2a9f88"
+    },
+    {
+      "path": "docs/ai/MEETING_INTELLIGENCE_CONTRACT.md",
+      "bytes": 3954,
+      "sha256": "7d1f9900a75e00088e4e0522e7954c69a6177a1fec4a50cc6354e9345eded2d8"
+    },
+    {
+      "path": "docs/architecture/DOMAIN_CONTRACTS.md",
+      "bytes": 11012,
+      "sha256": "79bd831cd3abc9596932cf7239732666c6036320ca0149c136def9a2f99567c1"
+    },
+    {
+      "path": "docs/architecture/FINAL_ARCHITECTURE.md",
+      "bytes": 12070,
+      "sha256": "2b69dbd10a0f06918bdf4508a3c82fe645f36d90c6d26f0c1d1d0717cf0f7a56"
+    },
+    {
+      "path": "docs/audit/MULTIDIMENSIONAL_DESIGN_AUDIT.md",
+      "bytes": 6906,
+      "sha256": "9841baf6f7bf0e3d6c478f15efb2c2a711effad8616791f9df22a544a0599544"
+    },
+    {
+      "path": "docs/compliance/EMPLOYMENT_AI_GOVERNANCE_SPEC.md",
+      "bytes": 7027,
+      "sha256": "c7618002bf9ae171453193c089230049073e806acf4a5eb9c6e81a9b82d7f1fd"
+    },
+    {
+      "path": "docs/country-packs/GLOBAL_JURISDICTION_ARCHITECTURE.md",
+      "bytes": 9457,
+      "sha256": "3bd00b992cb37d753797a9a34a0413c655f16ded9566c42dc4561c239f57c037"
+    },
+    {
+      "path": "docs/data/LEARNING_INTELLIGENCE_FLYWHEEL_SPEC.md",
+      "bytes": 12424,
+      "sha256": "1451923a2f42194092d92e3f14630bd0306c769a257163d1b6f114fd9d534ff3"
+    },
+    {
+      "path": "docs/data/PORTABILITY_IMPORT_REVERSAL_CONTRACT.md",
+      "bytes": 1545,
+      "sha256": "c86404b68794bdcd67e45e72c33c8411dca2f1daf5328089687fcc26ae3a79c2"
+    },
+    {
+      "path": "docs/data/WORK_GRAPH_AND_CAPABILITY_ONTOLOGY_SPEC.md",
+      "bytes": 6519,
+      "sha256": "85c6f85f788800650430d75907e915f304c6eb21a1fe279d67cca44b9f696535"
+    },
+    {
+      "path": "docs/domains/AGRICULTURE_FOOD_TRACEABILITY_PACK_SPEC.md",
+      "bytes": 3399,
+      "sha256": "bad67791c5529685b0baf6d3de2cf71fc192551f6b380a523d783705f7476349"
+    },
+    {
+      "path": "docs/domains/BANKING_FINANCIAL_SERVICES_BOUNDARY_SPEC.md",
+      "bytes": 2654,
+      "sha256": "dccac02274fda3ff5751361774dced884884a7f5237be9b492996b67ad6fa2d9"
+    },
+    {
+      "path": "docs/domains/COMMERCE_ORDER_DISPUTE_CONTRACT.md",
+      "bytes": 1416,
+      "sha256": "b53699ac11d9cbb86178f9c88b1ac8567732750f86841a095a497bf0d7b2fcab"
+    },
+    {
+      "path": "docs/domains/COMMERCE_PROCUREMENT_INVENTORY_LOGISTICS_SPEC.md",
+      "bytes": 6325,
+      "sha256": "c60b8838b8a0afcf50dc734edcd5ef6fbaad07c54f7a28cc6a7842ddd1c05db3"
+    },
+    {
+      "path": "docs/domains/INVENTORY_STOCKTAKE_VALUATION_CONTRACT.md",
+      "bytes": 1327,
+      "sha256": "853ffabf833d37aafe0074dd882e20934b5b4a598f665aaa97aa85bc46c52d5f"
+    },
+    {
+      "path": "docs/domains/MANAGED_NETWORK_VETTING_REPLACEMENT_CONTRACT.md",
+      "bytes": 1394,
+      "sha256": "53c7900beab0670bd7566ea4c85586a2dfca1a7ec1438ecfd67e59cb40c20742"
+    },
+    {
+      "path": "docs/domains/MANUFACTURING_ASSET_IOT_EDGE_SPEC.md",
+      "bytes": 4613,
+      "sha256": "b40ff972863b651d725987d3328f1fa3cc6307882a4cfa46b81ff81ba54569f1"
+    },
+    {
+      "path": "docs/domains/WEBSITE_CMS_COMMERCE_SEO_SPEC.md",
+      "bytes": 3712,
+      "sha256": "59860ce571d7b895e40be8b6b3730dfdffabd5696a522a428859beaf842190fc"
+    },
+    {
+      "path": "docs/engineering/AI_ENGINEERING_CONSTITUTION.md",
+      "bytes": 13999,
+      "sha256": "598b0b63808e0026fc5692724aff007db1ff1498d9087876e13ed576c649b58d"
+    },
+    {
+      "path": "docs/engineering/AUTONOMOUS_ENGINEERING_PLAN.md",
+      "bytes": 7295,
+      "sha256": "c576ce814a360a0f6a1efe9e94f28758d4994667437aaab1e3d69303c14d2d08"
+    },
+    {
+      "path": "docs/engineering/AUTONOMOUS_SDLC_CONTROL_PLANE_SPEC.md",
+      "bytes": 21848,
+      "sha256": "d24d96d51e4771ce24b845632f147e842bf12af09fd8eb4ad5cf7b372e1ee386"
+    },
+    {
+      "path": "docs/engineering/ENGINEERING_GUARDRAILS.md",
+      "bytes": 29616,
+      "sha256": "bc2772e461c743270cc17abe6ed305684a64d3f0a1b699ec655e742e8cc044b7"
+    },
+    {
+      "path": "docs/evidence/DOCUMENT_REVIEW.md",
+      "bytes": 4421,
+      "sha256": "16271a89214738c774c7a8efa03c794df0c28dccdcfa739c2c552082fe1fcd0b"
+    },
+    {
+      "path": "docs/evidence/EVIDENCE_INDEX.md",
+      "bytes": 3960,
+      "sha256": "e3eaecbc4ba0740258f05c2c39b0a2fe0df4c122973bf2e08d912aa21ea37424"
+    },
+    {
+      "path": "docs/finance/BUDGET_COST_CENTER_CONTRACT.md",
+      "bytes": 5267,
+      "sha256": "d8af7250d169085a4702bf2901880b56838e1188a4e67456d889d1b27adc0626"
+    },
+    {
+      "path": "docs/finance/FINANCIAL_BUSINESS_REQUIREMENTS.md",
+      "bytes": 8205,
+      "sha256": "a91456a16ee7db185b9f3a036277937aeec3b26a4a998fb40861c8d4d919a430"
+    },
+    {
+      "path": "docs/finance/FIXED_ASSET_ACCOUNTING_CONTRACT.md",
+      "bytes": 1392,
+      "sha256": "edcf716ff3f91315bbb1f2831d3acb01c963d0c9c0f9f4c3a71dd2a524d1180e"
+    },
+    {
+      "path": "docs/market/MARKET_BRAND_PSYCHOLOGY_VALUE_GTM_FINAL.md",
+      "bytes": 13885,
+      "sha256": "beea5e9b2551833ec88496e26afd7aebd51e6231f574920092bb4beec146c2f9"
+    },
+    {
+      "path": "docs/operations/ASSET_MANAGEMENT_CONTRACT.md",
+      "bytes": 2517,
+      "sha256": "170fe6907d58533afc5ebe7d8dbf3e9875ace74e7d06adc6a575bebc7665f683"
+    },
+    {
+      "path": "docs/operations/DEPLOYMENT_RECOVERY.md",
+      "bytes": 3612,
+      "sha256": "6f3c31d6d4680f863b8f78e8ea3972cbd1675bf9d50bf1dd833f418965f8c518"
+    },
+    {
+      "path": "docs/operations/INCIDENT_MANAGEMENT_CONTRACT.md",
+      "bytes": 2872,
+      "sha256": "1ec4ac2daa82308bd82b7ecd0cb83e3d29db6412c2df198a198be46e9cece2be"
+    },
+    {
+      "path": "docs/operations/OPERATIONAL_HEALTH_TELEMETRY_CONTRACT.md",
+      "bytes": 3338,
+      "sha256": "311eb51515de130cbd745a630fa8c55a4cb40015f874b8224ce715bea69cbda0"
+    },
+    {
+      "path": "docs/platform/DEVELOPER_PLATFORM_EXTENSION_RUNTIME_MARKETPLACE_SPEC.md",
+      "bytes": 15348,
+      "sha256": "a56fc1e0a69d562543198b6891a146be5f1aa601228749ae2dfbb4e906feb2b8"
+    },
+    {
+      "path": "docs/platform/DEVELOPER_STUDIO_MARKETPLACE_ARCHITECTURE.md",
+      "bytes": 7393,
+      "sha256": "5b9b6752ad825397e4da082277fe77b1f643faa2c9e034438ab5ab6f511137cf"
+    },
+    {
+      "path": "docs/platform/GLOBAL_LOCALIZATION_COMPLIANCE_INTEROPERABILITY_SPEC.md",
+      "bytes": 6684,
+      "sha256": "1a6870cb980a12a3e3c9968df96fd6ac35e2019cafa3bb797500e6f0b5c96370"
+    },
+    {
+      "path": "docs/platform/INDUSTRY_PACK_ARCHITECTURE_AND_CAPABILITY_MATRIX.md",
+      "bytes": 5187,
+      "sha256": "bee05b0544cae3aa896b56bc9ced23defb0c7a2d7cd101612b1fecbdae545578"
+    },
+    {
+      "path": "docs/platform/INTENT_TO_OUTCOME_ORCHESTRATION_SPEC.md",
+      "bytes": 7812,
+      "sha256": "9b02d28ef257b9076ce84930b7a3b274dc3f9a6ff51311999af100b6c2e66fd9"
+    },
+    {
+      "path": "docs/platform/STUDIO_BUILDERS_EXECUTION_CONTRACT.md",
+      "bytes": 1846,
+      "sha256": "de62275ec58171e7e7bf46ac80be0e1a43204b6148d8151736ce8c6c1e423510"
+    },
+    {
+      "path": "docs/platform/UNIVERSAL_BUSINESS_KERNEL_AND_STUDIO_SPEC.md",
+      "bytes": 9993,
+      "sha256": "ba2235e0d02c67f2ec7eef1d1bf9cce887116a5d38b3f91f47d46ac322db2e91"
+    },
+    {
+      "path": "docs/product/ECOSYSTEM_COMMUNITY_PARTNER_STRATEGY.md",
+      "bytes": 5131,
+      "sha256": "45dfbd262c28770b5a8da8d7fdcd2cb283bfe84bd5cbd920bce32d847b261f06"
+    },
+    {
+      "path": "docs/product/GLOBAL_PRODUCT_EXPERIENCE_AND_PERSONA_WORKSPACES_SPEC.md",
+      "bytes": 4485,
+      "sha256": "42a284a0b94b577df5552131aef26e5f7c321d3c6d17febcc676b28d80532b86"
+    },
+    {
+      "path": "docs/product/GO_TO_MARKET_BRAND_MONETIZATION_SPEC.md",
+      "bytes": 10485,
+      "sha256": "a27ff24730580eb5abd94b339368e5c51f1d87fd6a4d035716d94725c0cf37b9"
+    },
+    {
+      "path": "docs/product/HAYOOL_OS_COMPREHENSIVE_BUSINESS_PLAN_FA.md",
+      "bytes": 19140,
+      "sha256": "865ee249ba98bcd51d5648d6567d5f96df40fb975a2dd98913ede7e5cf737b35"
+    },
+    {
+      "path": "docs/product/HAYOOL_OS_MASTER_PRODUCT_ENGINEERING_SPEC.md",
+      "bytes": 41857,
+      "sha256": "e0fd7aa3561d556eddab0679f6b2be7e4a72e54d45e4fde0c5594c1190cbd821"
+    },
+    {
+      "path": "docs/product/HAYOOL_WORKFORCE_BUSINESS_STRATEGY.md",
+      "bytes": 2777,
+      "sha256": "be04d5125949504bc0a3a97b714daa46cc43b445d16c1fd92ba88940590b32ae"
+    },
+    {
+      "path": "docs/product/OWNER_DECISION_SHEET.md",
+      "bytes": 3440,
+      "sha256": "9eaa4b54f10468c2c7f82c40d561a218127d3c1e7e969d7cfeda1875c74e0335"
+    },
+    {
+      "path": "docs/product/PRICING_PROFIT_OPTIMIZATION_EXPERIMENTATION_SPEC.md",
+      "bytes": 8388,
+      "sha256": "6467899d878942d6e7b4040dc5eb19fa2f28e3d466743657386672e0930f7deb"
+    },
+    {
+      "path": "docs/product/RELEASE_TRAIN_MARKET_READINESS_GATES.md",
+      "bytes": 5354,
+      "sha256": "f3eda0836042ed2ac74b01f69f437e10a6c657e60ee45c7bf5ace52e397536e4"
+    },
+    {
+      "path": "docs/product/STRATEGIC_RISK_REGISTER.md",
+      "bytes": 6538,
+      "sha256": "da8a9001d6cc4a7752a8f26df65db6ee885f9d1993f88c2ffad606fc4a0fa355"
+    },
+    {
+      "path": "docs/product/TRUST_SAFETY_AND_MARKETPLACE_INTEGRITY_SPEC.md",
+      "bytes": 4393,
+      "sha256": "f15d93f10579364cc34bda7dfaf2e81645dbf8ea8fe3b4dafa13a3fad42d36ba"
+    },
+    {
+      "path": "docs/product/UNIT_ECONOMICS_FINANCIAL_MODEL_SPEC.md",
+      "bytes": 4423,
+      "sha256": "100c40c7b18856f15d52b121ba7d68b2767f10dc9d9ddfa67660a736b2d369d8"
+    },
+    {
+      "path": "docs/releases/RELEASE_ROADMAP.md",
+      "bytes": 9945,
+      "sha256": "82591b2bb6cbc97fdbd33e72c9b73d00566117f385407e04bad82cdc11a622bd"
+    },
+    {
+      "path": "docs/requirements/GRANULARITY_REVIEW.md",
+      "bytes": 31825,
+      "sha256": "39447743c64e1762397a348e5fe0712b12dca35182f5d751e1d8b679f6452059"
+    },
+    {
+      "path": "docs/requirements/REQUIREMENTS_CATALOG.json",
+      "bytes": 110231,
+      "sha256": "6040ee5bd9774a61c21383eacc0bef85b588fba469170f9b1b448001fa9c1289"
+    },
+    {
+      "path": "docs/requirements/REQUIREMENTS_CATALOG.md",
+      "bytes": 49319,
+      "sha256": "d658161bcdf98ddaf3af2beaaa4635e110fe3fa4238dec48f3cb7417b9405e5e"
+    },
+    {
+      "path": "docs/requirements/SOURCE_COVERAGE.md",
+      "bytes": 10571,
+      "sha256": "e00c300673e6fea2ea91a0ef2cacb83b118deb8b0ba19b1bc81560c453215e37"
+    },
+    {
+      "path": "docs/research/RESEARCH_REGISTER.md",
+      "bytes": 2547,
+      "sha256": "3fc0b380dbdb9065d27b0514753559186e82ad8942a4be822acf08a7dd3a1a33"
+    },
+    {
+      "path": "docs/security/DATA_CLASSIFICATION_KEY_EGRESS_CONTRACT.md",
+      "bytes": 1839,
+      "sha256": "3dedc8343f4b5257ac06679696b6532201e3f474587e8f158875f608a5b8bbbd"
+    },
+    {
+      "path": "docs/security/SECRETS_VAULT_CONTRACT.md",
+      "bytes": 2427,
+      "sha256": "b92b88f5ee4bf4d8c116287662251459ed094a7786c13fe1f4ebf1f7d2c6429a"
+    },
+    {
+      "path": "docs/security/SECURITY_PRIVACY_COMPLIANCE.md",
+      "bytes": 8620,
+      "sha256": "2516149de1b811a7285953a062aa406e58e4ba7bae0b5352343bb233d3fdd74b"
+    },
+    {
+      "path": "docs/testing/TESTING_STRATEGY.md",
+      "bytes": 10865,
+      "sha256": "d8d306565188b08c2706fc5f643c317f321a66596556136a31938b7f655a7ee3"
+    },
+    {
+      "path": "docs/ux/ACCESSIBILITY_DESIGN_SYSTEM.md",
+      "bytes": 3015,
+      "sha256": "e8524bb696408a830817e7df67b9cace1a19c33a88c4359a384ad4a8dd4b3436"
+    }
+  ]
+}

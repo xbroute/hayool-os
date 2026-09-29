@@ -1,0 +1,88 @@
+name: engineering-trusted-gate
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  candidate-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, resolved 2026-09-26
+        with:
+          ref: ${{ github.sha }}
+          path: policy
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, resolved 2026-09-26
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: candidate
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Run base policy on exact candidate head in isolated test runner
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          TARGET_SHA: ${{ github.event.pull_request.head.sha }}
+          HAYOOL_CANDIDATE_ROOT: ${{ github.workspace }}/candidate
+          HAYOOL_POLICY_SOURCE: base
+        run: python3 -I policy/bootstrap/baseline.py --base-sha "$BASE_SHA" --target-sha "$TARGET_SHA" --output "$RUNNER_TEMP/baseline.json"
+      - name: Preserve candidate-check evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4, resolved 2026-09-26
+        with:
+          name: engineering-protected-baseline-${{ github.event.pull_request.head.sha }}
+          path: ${{ runner.temp }}/baseline.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  trusted-gate:
+    needs: candidate-check
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+      checks: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, resolved 2026-09-26
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify live evidence without publishing a decision
+        id: verify_gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          POLICY_SHA: ${{ github.sha }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          TRUSTED_RUN_ID: ${{ github.run_id }}
+          TRUSTED_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: python3 -I bootstrap/trusted_gate.py --pr-target-event "$GITHUB_EVENT_PATH" --repo xbroute/hayool-os --policy-sha "$POLICY_SHA" --run-id "$TRUSTED_RUN_ID" --run-attempt "$TRUSTED_RUN_ATTEMPT" --output "$RUNNER_TEMP/trusted-gate.json"
+      - name: Preserve trusted-gate evidence
+        id: preserve_gate
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4, resolved 2026-09-26
+        with:
+          name: engineering-trusted-gate-${{ github.run_id }}
+          path: ${{ runner.temp }}/trusted-gate.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish exact-head decision after artifact exists
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          POLICY_SHA: ${{ github.sha }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          TRUSTED_RUN_ID: ${{ github.run_id }}
+          TRUSTED_RUN_ATTEMPT: ${{ github.run_attempt }}
+          VERIFY_OUTCOME: ${{ steps.verify_gate.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.preserve_gate.outcome }}
+        run: python3 -I bootstrap/trusted_gate.py --pr-target-event "$GITHUB_EVENT_PATH" --repo xbroute/hayool-os --policy-sha "$POLICY_SHA" --run-id "$TRUSTED_RUN_ID" --run-attempt "$TRUSTED_RUN_ATTEMPT" --output "$RUNNER_TEMP/trusted-gate-final.json" --require-trusted-artifact "$RUNNER_TEMP/trusted-gate.json" --verify-outcome "$VERIFY_OUTCOME" --upload-outcome "$UPLOAD_OUTCOME" --post-status
