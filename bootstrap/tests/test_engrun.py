@@ -130,6 +130,8 @@ class EngineeringRunGateTests(unittest.TestCase):
             ]
             path = day / f"rollout-2026-09-29T00-00-0{i}-{review['session_id']}.jsonl"
             path.write_text("\n".join(json.dumps(row) for row in entries) + "\n", encoding="utf-8")
+            if i == 1:
+                first_session = path
         self.assertEqual(verify_reviewer_sessions(self.run, self.root, self.target, sessions), [])
         # A writer can recalculate a local hash, but cannot make it equal the
         # independent final answer in the external session record.
@@ -140,6 +142,20 @@ class EngineeringRunGateTests(unittest.TestCase):
         self._write("review-1.json", forged)
         self.run["reviewers"][0]["report_sha256"] = self._hash("review-1.json")
         self.assertTrue(verify_reviewer_sessions(self.run, self.root, self.target, sessions))
+        self._write("review-1.json", {"target_sha": self.target, "read_only": True,
+                                      "verdict": "PASS", "findings": [],
+                                      "effective_provider": "openai", "effective_model": "gpt-6-sol"})
+        self.run["reviewers"][0]["report_sha256"] = self._hash("review-1.json")
+        correction = {"type": "response_item", "payload": {"id": "msg_later_correction",
+            "type": "message", "role": "assistant", "phase": "final_answer",
+            "content": [{"type": "output_text", "text": json.dumps({
+                "target_sha": self.target, "read_only": True, "verdict": "FAIL",
+                "findings": [{"id": "SEC-1", "severity": "P1", "status": "OPEN",
+                              "target_sha": self.target, "summary": "later correction"}]})}]}}
+        with first_session.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(correction) + "\n")
+        self.assertTrue(verify_reviewer_sessions(self.run, self.root, self.target, sessions),
+                        "a stale PASS cannot override the reviewer's later FAIL")
 
     def test_failure_injection_ai_votes_cannot_override_hard_failure(self):
         report = json.loads((self.root / "baseline.json").read_text())

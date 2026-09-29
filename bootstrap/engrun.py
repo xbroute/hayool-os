@@ -628,10 +628,15 @@ def verify_reviewer_sessions(run: dict, root: Path, expected_sha: str,
             parent_ids.add(parent)
             model = None
             final_matches: list[tuple[object, object]] = []
+            final_answer_ids: list[object] = []
             for record in records:
                 payload = record.get("payload") or {}
                 if record.get("type") == "turn_context":
                     model = payload.get("model")
+                if (record.get("type") == "response_item" and payload.get("type") == "message"
+                        and payload.get("role") == "assistant"
+                        and payload.get("phase") == "final_answer"):
+                    final_answer_ids.append(payload.get("id"))
                 if (record.get("type") == "response_item" and payload.get("id") == item_id):
                     if (payload.get("type") != "message" or payload.get("role") != "assistant"
                             or payload.get("phase") != "final_answer"):
@@ -642,8 +647,8 @@ def verify_reviewer_sessions(run: dict, root: Path, expected_sha: str,
                             or parts[0].get("type") != "output_text"):
                         raise ValueError("reviewer final answer is not one text report")
                     final_matches.append((model, parts[0].get("text")))
-            if len(final_matches) != 1:
-                raise ValueError("reviewer final answer missing or ambiguous")
+            if len(final_matches) != 1 or not final_answer_ids or final_answer_ids[-1] != item_id:
+                raise ValueError("reviewer final answer is missing, ambiguous or superseded")
             effective_model, output = final_matches[0]
             if (not isinstance(output, str) or not isinstance(effective_model, str)
                     or review.get("effective_provider") != provider
