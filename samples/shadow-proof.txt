@@ -1,0 +1,1 @@
+M0 Shadow Mode probe. This file carries no product behavior or runtime configuration.
