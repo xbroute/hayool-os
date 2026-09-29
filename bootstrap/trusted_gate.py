@@ -288,7 +288,7 @@ def evaluate(event: dict[str, object], repo: str, policy_sha: str, client: GitHu
 
 
 def target_identity(event: dict[str, object], repo: str, policy_sha: str,
-                    client: GitHubClient) -> tuple[int, str]:
+                    client: GitHubClient) -> tuple[int, str, str, int]:
     """Resolve the live current PR head, never trusting event text alone."""
     demand(REPO_RE.fullmatch(repo) is not None, "invalid repository")
     sha(policy_sha, "policy SHA")
@@ -302,27 +302,53 @@ def target_identity(event: dict[str, object], repo: str, policy_sha: str,
     base = pr.get("base")
     demand(isinstance(head, dict) and isinstance(base, dict), "PR head/base missing")
     head_sha = sha(head.get("sha"), "head SHA")
-    demand(head.get("repo", {}).get("full_name") == repo, "forked PR is outside M0 scope")
+    head_ref = head.get("ref")
+    repo_id = base.get("repo", {}).get("id")
+    demand(isinstance(head_ref, str) and bool(head_ref), "PR head ref missing")
+    demand(type(repo_id) is int and repo_id > 0
+           and base.get("repo", {}).get("full_name") == repo
+           and head.get("repo", {}).get("full_name") == repo
+           and head.get("repo", {}).get("id") == repo_id,
+           "forked or mismatched PR repository is outside M0 scope")
     demand(base.get("ref") == "main" and base.get("sha") == policy_sha, "PR base/policy SHA mismatch")
     demand(event_pr.get("head", {}).get("sha") == head_sha
-           and event_pr.get("base", {}).get("sha") == policy_sha,
+           and event_pr.get("head", {}).get("ref") == head_ref
+           and event_pr.get("base", {}).get("sha") == policy_sha
+           and event_pr.get("base", {}).get("ref") == "main",
            "PR event differs from live head/base")
     main_ref = client.get_json(f"repos/{repo}/git/ref/heads/main")
     demand(main_ref.get("object", {}).get("sha") == policy_sha, "policy is no longer current main")
-    return number, head_sha
+    return number, head_sha, head_ref, repo_id
 
 
 def evaluate_pr_target(event: dict[str, object], repo: str, policy_sha: str,
                        run_id: int, run_attempt: int, client: GitHubClient) -> dict[str, object]:
     """Bind a default-main PR-target run, isolated job, and exact artifact."""
-    number, head_sha = target_identity(event, repo, policy_sha, client)
+    number, head_sha, head_ref, repo_id = target_identity(event, repo, policy_sha, client)
     run = client.get_json(f"repos/{repo}/actions/runs/{run_id}")
     demand(run.get("id") == run_id and run.get("run_attempt") == run_attempt,
            "trusted run ID/attempt mismatch")
+    workflow = client.get_json(f"repos/{repo}/actions/workflows/{TRUSTED_WORKFLOW_PATH}")
+    demand(workflow.get("id") == run.get("workflow_id")
+           and workflow.get("path") == TRUSTED_WORKFLOW_PATH
+           and workflow.get("state") == "active", "trusted workflow identity is not active")
+    linked = run.get("pull_requests")
+    demand(isinstance(linked, list) and len(linked) == 1
+           and isinstance(linked[0], dict)
+           and linked[0].get("number") == number
+           and linked[0].get("base", {}).get("ref") == "main"
+           and linked[0].get("base", {}).get("sha") == policy_sha
+           and linked[0].get("base", {}).get("repo", {}).get("id") == repo_id
+           and linked[0].get("head", {}).get("ref") == head_ref
+           and linked[0].get("head", {}).get("sha") == head_sha
+           and linked[0].get("head", {}).get("repo", {}).get("id") == repo_id,
+           "trusted run PR base/head binding mismatch")
     demand(run.get("repository", {}).get("full_name") == repo
+           and run.get("repository", {}).get("id") == repo_id
+           and run.get("head_repository", {}).get("id") == repo_id
            and run.get("event") == "pull_request_target"
-           and run.get("head_sha") == policy_sha
-           and run.get("head_branch") == "main"
+           and run.get("head_sha") == head_sha
+           and run.get("head_branch") == head_ref
            and str(run.get("path", "")).split("@", 1)[0] == TRUSTED_WORKFLOW_PATH,
            "trusted run is not the protected-main workflow")
     demand(run.get("status") in {"queued", "in_progress", "completed"}, "trusted run status invalid")
@@ -342,7 +368,8 @@ def evaluate_pr_target(event: dict[str, object], repo: str, policy_sha: str,
     rows = jobs.get("jobs")
     demand(isinstance(rows, list) and jobs.get("total_count") == len(rows), "trusted job list incomplete")
     candidates = [row for row in rows if isinstance(row, dict) and row.get("name") == "candidate-check"]
-    demand(len(candidates) == 1 and candidates[0].get("conclusion") == "success",
+    demand(len(candidates) == 1 and candidates[0].get("conclusion") == "success"
+           and candidates[0].get("head_sha") == head_sha,
            "isolated candidate job missing or failed")
     candidate_job = candidates[0]
     candidate_job_id = candidate_job.get("id")
@@ -351,6 +378,7 @@ def evaluate_pr_target(event: dict[str, object], repo: str, policy_sha: str,
     check = client.get_json(f"repos/{repo}/check-runs/{candidate_job_id}")
     demand(check.get("id") == candidate_job_id and check.get("name") == "candidate-check"
            and check.get("conclusion") == "success"
+           and check.get("head_sha") == head_sha
            and check.get("app", {}).get("slug") == "github-actions"
            and check.get("check_suite", {}).get("id") == run.get("check_suite_id"),
            "isolated candidate check provenance mismatch")
@@ -373,7 +401,10 @@ def evaluate_pr_target(event: dict[str, object], repo: str, policy_sha: str,
            "protected baseline artifact metadata invalid")
     origin = artifact.get("workflow_run")
     demand(isinstance(origin, dict) and origin.get("id") == run_id
-           and origin.get("head_sha") == policy_sha,
+           and origin.get("head_sha") == head_sha
+           and origin.get("head_branch") == head_ref
+           and origin.get("repository_id") == repo_id
+           and origin.get("head_repository_id") == repo_id,
            "protected baseline artifact origin mismatch")
     archive = client.get_artifact_zip(f"repos/{repo}/actions/artifacts/{artifact_id}/zip")
     demand(hashlib.sha256(archive).hexdigest() == digest[7:], "protected artifact digest mismatch")
@@ -394,7 +425,8 @@ def evaluate_pr_target(event: dict[str, object], repo: str, policy_sha: str,
     return {
         "schema_version": 2, "decision": "PASS", "github_api_verified": True,
         "source": "protected_main_pr_target", "repository": repo, "pr_number": number,
-        "base_sha": policy_sha, "head_sha": head_sha, "policy_sha": policy_sha,
+        "base_sha": policy_sha, "head_sha": head_sha, "head_branch": head_ref,
+        "repository_id": repo_id, "policy_sha": policy_sha,
         "trusted_run_id": run_id, "trusted_run_attempt": run_attempt,
         "candidate_job_id": candidate_job_id, "candidate_artifact_id": artifact_id,
         "candidate_artifact_digest": digest, "baseline_json_sha256": baseline_sha256,
@@ -407,7 +439,7 @@ def evaluate_pr_target(event: dict[str, object], repo: str, policy_sha: str,
 def post_target_status(client: GitHubClient, event: dict[str, object], repo: str,
                        policy_sha: str, run_id: int, result: dict[str, object],
                        state: str | None = None) -> None:
-    number, head_sha = target_identity(event, repo, policy_sha, client)
+    number, head_sha, _, _ = target_identity(event, repo, policy_sha, client)
     if result.get("decision") == "PASS":
         demand(result.get("pr_number") == number and result.get("head_sha") == head_sha
                and result.get("trusted_run_id") == run_id, "PASS report is not current PR")
@@ -445,7 +477,10 @@ def require_trusted_artifact(client: GitHubClient, repo: str, run_id: int,
            and artifact.get("expired") is False
            and isinstance(digest, str) and SHA256_RE.fullmatch(digest) is not None
            and artifact.get("workflow_run", {}).get("id") == run_id
-           and artifact.get("workflow_run", {}).get("head_sha") == policy_sha,
+           and artifact.get("workflow_run", {}).get("head_sha") == expected.get("head_sha")
+           and artifact.get("workflow_run", {}).get("head_branch") == expected.get("head_branch")
+           and artifact.get("workflow_run", {}).get("repository_id") == expected.get("repository_id")
+           and artifact.get("workflow_run", {}).get("head_repository_id") == expected.get("repository_id"),
            "trusted artifact origin invalid")
     archive = client.get_artifact_zip(f"repos/{repo}/actions/artifacts/{artifact_id}/zip")
     demand(hashlib.sha256(archive).hexdigest() == digest[7:],

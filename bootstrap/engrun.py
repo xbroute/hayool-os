@@ -297,37 +297,60 @@ def verify_protected_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
             return ["protected-main PR number missing"]
         live_pr = _github_json(f"pulls/{pr_number}")
         main_ref = _github_json("git/ref/heads/main")
+        repo_id = live_pr.get("base", {}).get("repo", {}).get("id")
         if not (
             live_pr.get("state") == "open"
             and live_pr.get("head", {}).get("sha") == expected_sha
             and live_pr.get("head", {}).get("ref") == run.get("branch")
             and live_pr.get("head", {}).get("repo", {}).get("full_name") == run.get("repository")
+            and type(repo_id) is int and repo_id > 0
+            and live_pr.get("head", {}).get("repo", {}).get("id") == repo_id
             and live_pr.get("base", {}).get("ref") == "main"
             and live_pr.get("base", {}).get("sha") == run.get("base_sha")
             and main_ref.get("object", {}).get("sha") == run.get("policy_sha")
         ):
             return ["protected-main PR/head/base/policy is stale or inconsistent"]
         observed = _github_json(f"actions/runs/{run_id}")
+        workflow_path = ".github/workflows/engineering-trusted-gate.yml"
+        workflow = _github_json("actions/workflows/engineering-trusted-gate.yml")
+        linked = observed.get("pull_requests")
+        if not (workflow.get("id") == observed.get("workflow_id")
+                and workflow.get("path") == workflow_path
+                and workflow.get("state") == "active"
+                and isinstance(linked, list) and len(linked) == 1
+                and isinstance(linked[0], dict)
+                and linked[0].get("number") == pr_number
+                and linked[0].get("base", {}).get("ref") == "main"
+                and linked[0].get("base", {}).get("sha") == run.get("policy_sha")
+                and linked[0].get("base", {}).get("repo", {}).get("id") == repo_id
+                and linked[0].get("head", {}).get("ref") == run.get("branch")
+                and linked[0].get("head", {}).get("sha") == expected_sha
+                and linked[0].get("head", {}).get("repo", {}).get("id") == repo_id):
+            return ["protected-main workflow or run PR base/head binding mismatch"]
         if not (
             observed.get("id") == run_id
             and observed.get("repository", {}).get("full_name") == run.get("repository")
+            and observed.get("repository", {}).get("id") == repo_id
+            and observed.get("head_repository", {}).get("id") == repo_id
             and observed.get("event") == "pull_request_target"
-            and observed.get("head_sha") == run.get("policy_sha")
-            and observed.get("head_branch") == "main"
+            and observed.get("head_sha") == expected_sha
+            and observed.get("head_branch") == run.get("branch")
             and observed.get("run_attempt") == gate.get("run_attempt")
             and observed.get("status") == "completed"
             and observed.get("conclusion") == "success"
-            and str(observed.get("path", "")).split("@", 1)[0]
-                == ".github/workflows/engineering-trusted-gate.yml"
+            and str(observed.get("path", "")).split("@", 1)[0] == workflow_path
         ):
-            return ["protected-main GitHub run is not completed success from exact policy SHA"]
+            return ["protected-main GitHub run is not completed success for exact PR head"]
         jobs = _github_json(f"actions/runs/{run_id}/jobs?per_page=100")
         rows = jobs.get("jobs")
         if not isinstance(rows, list) or jobs.get("total_count") != len(rows):
             return ["protected-main job list incomplete"]
         candidate = [j for j in rows if j.get("name") == "candidate-check" and j.get("conclusion") == "success"]
         trusted = [j for j in rows if j.get("name") == "trusted-gate" and j.get("conclusion") == "success"]
-        if len(candidate) != 1 or len(trusted) != 1 or candidate[0].get("id") != report.get("candidate_job_id"):
+        if (len(candidate) != 1 or len(trusted) != 1
+                or candidate[0].get("id") != report.get("candidate_job_id")
+                or candidate[0].get("head_sha") != expected_sha
+                or trusted[0].get("head_sha") != expected_sha):
             return ["protected-main isolated or status job failed"]
         artifacts = _github_json(f"actions/runs/{run_id}/artifacts?per_page=100")
         listed = artifacts.get("artifacts")
@@ -347,7 +370,10 @@ def verify_protected_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
                     and artifact.get("expired") is False
                     and re.fullmatch(r"sha256:[0-9a-f]{64}", str(artifact.get("digest", "")))
                     and artifact.get("workflow_run", {}).get("id") == run_id
-                    and artifact.get("workflow_run", {}).get("head_sha") == run.get("policy_sha")):
+                    and artifact.get("workflow_run", {}).get("head_sha") == expected_sha
+                    and artifact.get("workflow_run", {}).get("head_branch") == run.get("branch")
+                    and artifact.get("workflow_run", {}).get("repository_id") == repo_id
+                    and artifact.get("workflow_run", {}).get("head_repository_id") == repo_id):
                 return [f"protected-main {kind} artifact origin/digest invalid"]
             selected[kind] = artifact
         if selected["gate"]["id"] != gate.get("artifact_id"):
@@ -394,6 +420,8 @@ def verify_protected_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
             and report.get("trusted_run_id") == run_id
             and report.get("trusted_run_attempt") == observed.get("run_attempt")
             and report.get("head_sha") == expected_sha
+            and report.get("head_branch") == run.get("branch")
+            and report.get("repository_id") == repo_id
             and report.get("policy_sha") == run.get("policy_sha")
             and report.get("decision") == "PASS"
             and report.get("errors") == []
@@ -413,7 +441,8 @@ def verify_protected_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
         if not any(c.get("context") == "engineering-trusted-gate-status" and c.get("app_id") == 15368
                    for c in required) or protection.get("required_status_checks", {}).get("strict") is not True:
             return ["protected main does not require the trusted exact-head status from Actions"]
-        statuses = _github_json(f"commits/{expected_sha}/status").get("statuses", [])
+        # The combined status endpoint omits creator; use the direct status list.
+        statuses = _github_json(f"statuses/{expected_sha}")
         matching = [s for s in statuses if s.get("context") == "engineering-trusted-gate-status"]
         if not matching or not (
             matching[0].get("state") == "success"

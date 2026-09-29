@@ -1,4 +1,17 @@
-# Engineering evidence live update — 2026-09-29 UTC
+# Engineering evidence live update after protected-main activation — 2026-09-29 UTC
+
+**M0.0 = PENDING; M0.2 = PENDING.** Read-only GitHub API confirmed independent `erfanxt` approval of PR #1 on `b8853c7a59a34eaca8bcaa5a153d949f0b275069`, merge by `erfanxt` as `9af7ac8a4b8cd7ea96c27a2eb5f4c69c92d33659`, policy 5892 `active` for `~ALL` paths with only `pull_request_target`, and strict required `engineering-trusted-gate-status` from App ID 15368. These are configured facts, not M0.0 PASS.
+
+| ID | Observed live evidence | Limit |
+|---|---|---|
+| EVID-ENG-MAIN-20260929 | Main/PR/protection/policy API readbacks above. Shadow PR #2 base main `9af7ac8a4b8cd7ea96c27a2eb5f4c69c92d33659`, head `bbe16a0069d37867eed41bc7a137c5ab17721334`, [trusted run 36525390832](https://github.com/xbroute/hayool-os/actions/runs/36525390832): candidate-check success; trusted-gate and exact-head status failure. API run/job/artifact `head_sha` was candidate, runner `POLICY_SHA` was main; log said `trusted run is not the protected-main workflow`. | Real fail-closed P1. The SHA-provenance repair exists only on an unmerged trust-migration branch; no live Shadow PASS. |
+| EVID-ENG-SPOOF-20260929 | Draft PR #6 head `12f25a995482c8bed631dcd13af819ea00e66f8f` added a `pull_request` workflow that would post a forged required success status. [PR-controlled run 36526808134](https://github.com/xbroute/hayool-os/actions/runs/36526808134) had `startup_failure` and zero jobs. [Main trusted run 36526808301](https://github.com/xbroute/hayool-os/actions/runs/36526808301) failed candidate hard checks and posted a failed exact-head status; PR remained blocked. | Actual suppression/failure observation, but the current trusted verifier also has the unrelated P1 above. Rerun after the trust migration before final attack proof. Never merge this PR. |
+| EVID-ENG-INJECTION-20260929 | Draft PR #3 head `6d92077537d6540067d94f1eff2e817ee229f1d9` was retargeted to main; [trusted run 36526932295](https://github.com/xbroute/hayool-os/actions/runs/36526932295) and the exact-head required status failed. | Must rerun after corrected trusted gate to separate intended kill-switch/test-integrity rejection from the current verifier P1. Never merge this PR. |
+| EVID-ENG-MIGRATION-REG | A real-shaped `pull_request_target` run fixture first failed on the merged old verifier with `trusted run is not the protected-main workflow`; the same positive case passed after the candidate repair in a read-only, networkless, resource-bounded container. The expanded protected-run suite passed 10/10; required M0 unit tests passed 36/36 in the same isolation. | Local pre/post proof only. The existing protected-main status rejects all trust-code changes under ADR-034; migration review, authorized merge procedure and live rerun remain outstanding. |
+
+---
+
+# Historical Engineering evidence update before protected-main activation — 2026-09-29 UTC
 
 **M0.0 = PENDING; M0.2 = PENDING.** Exact-head GitHub run IDs, artifact digests and independent review records are maintained in the [PR #1 ledger](https://github.com/xbroute/hayool-os/pull/1#issuecomment-5849944631) and [Shadow PR #2 ledger](https://github.com/xbroute/hayool-os/pull/2#issuecomment-5849945980), so an evidence update does not change the reviewed commit SHA. Always compare the ledger's head/base to the live PR before treating an entry as current. Entries below are dated history where they refer to earlier heads or ADR-033.
 
