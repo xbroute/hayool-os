@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from bootstrap.engrun import REQUIRED_CHECKS, evaluate, main, risk_for_path, verify_changed_paths, verify_github_ci, verify_reviewer_sessions
+from bootstrap.engrun import REQUIRED_CHECKS, evaluate, main, risk_for_path, verify_changed_paths, verify_github_ci, verify_reviewer_sessions, verify_writer_github, verify_writer_session
 
 
 class EngineeringRunGateTests(unittest.TestCase):
@@ -37,6 +37,7 @@ class EngineeringRunGateTests(unittest.TestCase):
         self.run = {
             "schema_version": 2,
             "run_id": "ENG-RUN-test",
+            "pr_number": 9,
             "mode": "shadow",
             "ci_mode": "legacy_workflow_run",
             "repository": "xbroute/hayool-os",
@@ -48,9 +49,10 @@ class EngineeringRunGateTests(unittest.TestCase):
             "changed_paths": ["samples/shadow-proof.txt"],
             "risk": "R0",
             "writer": {
-                "id": "writer", "branch": "codex/shadow-test", "read_only": False,
+                "id": "/root", "branch": "codex/shadow-test", "read_only": False,
                 "lease_issued_at": "2026-09-26T18:00:00Z", "lease_expires_at": "2026-09-26T19:00:00Z",
                 "gateway": "test-gateway", "requested_provider": "test-provider", "effective_provider": "test-provider", "requested_model": "test-model", "effective_model": "test-model", "identity_verified": True,
+                "session_id": "11111111-1111-4111-8111-111111111111", "github_login": "xbroute",
             },
             "reviewers": [
                 {"id": f"/root/review_{i}", "read_only": True, "target_sha": self.target, "verdict": "PASS",
@@ -101,9 +103,64 @@ class EngineeringRunGateTests(unittest.TestCase):
             raise AssertionError(command)
         with patch("bootstrap.engrun.verify_changed_paths", return_value=[]), \
              patch("bootstrap.engrun.verify_github_ci", return_value=[]), \
+             patch("bootstrap.engrun.verify_writer_session", return_value=[]), \
+             patch("bootstrap.engrun.verify_writer_github", return_value=[]), \
              patch("bootstrap.engrun.subprocess.check_output", side_effect=checkout), \
              patch.object(sys, "argv", ["engrun.py", str(run_file), "--root", str(self.root), "--sha", self.target]):
             self.assertEqual(main(), 1)
+
+    def test_writer_model_claim_cannot_make_cli_pass_without_session(self):
+        # Isolate the writer boundary: assume separate reviewers and CI passed.
+        # The fixture's writer provider/model are invented by its JSON author.
+        run_file = self.root / "run.json"
+        run_file.write_text(json.dumps(self.run), encoding="utf-8")
+        def checkout(command, **kwargs):
+            if command[-2:] == ["rev-parse", "HEAD"]:
+                return self.target + "\n"
+            if command[-1] == "--show-current":
+                return self.run["branch"] + "\n"
+            if command[-1] == "--porcelain":
+                return ""
+            raise AssertionError(command)
+        with patch("bootstrap.engrun.verify_reviewer_sessions", return_value=[]), \
+             patch("bootstrap.engrun.verify_changed_paths", return_value=[]), \
+             patch("bootstrap.engrun.verify_github_ci", return_value=[]), \
+             patch("bootstrap.engrun.verify_writer_github", return_value=[]), \
+             patch("bootstrap.engrun.subprocess.check_output", side_effect=checkout), \
+             patch.object(sys, "argv", ["engrun.py", str(run_file), "--root", str(self.root), "--sha", self.target]):
+            self.assertEqual(main(), 1)
+
+    def test_writer_model_and_github_login_require_external_observation(self):
+        sessions = self.root / "writer-sessions"
+        day = sessions / "2026" / "09" / "29"
+        day.mkdir(parents=True)
+        writer = self.run["writer"]
+        writer["effective_provider"] = "openai"
+        writer["effective_model"] = "gpt-6-sol"
+        sid = writer["session_id"]
+        path = day / f"rollout-2026-09-29T00-00-00-{sid}.jsonl"
+        rows = [
+            {"type": "session_meta", "payload": {"id": sid, "agent_path": None,
+                "parent_thread_id": None, "model_provider": "openai"}},
+            {"type": "turn_context", "payload": {"model": "gpt-6-sol"}},
+        ]
+        path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+        self.assertEqual(verify_writer_session(self.run, sessions), [])
+        writer["effective_model"] = "invented-model"
+        self.assertTrue(verify_writer_session(self.run, sessions))
+        writer["effective_model"] = "gpt-6-sol"
+        live = {
+            "pulls/9": {"number": 9, "state": "open", "user": {"login": "xbroute"},
+                        "head": {"sha": self.target, "ref": self.run["branch"],
+                                 "repo": {"full_name": "xbroute/hayool-os"}},
+                        "base": {"sha": self.base}},
+            f"commits/{self.target}": {"sha": self.target,
+                "author": {"login": "xbroute"}, "committer": {"login": "xbroute"}},
+        }
+        with patch("bootstrap.engrun._github_json", side_effect=lambda key: live[key]):
+            self.assertEqual(verify_writer_github(self.run, self.target), [])
+            writer["github_login"] = "fake-writer"
+            self.assertTrue(verify_writer_github(self.run, self.target))
 
     def test_external_final_answers_bind_review_bytes_and_identity(self):
         sessions = self.root / "external-codex-sessions"

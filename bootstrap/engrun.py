@@ -21,6 +21,7 @@ SHA = re.compile(r"^[0-9a-f]{40}$")
 SESSION_ID = re.compile(r"^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$")
 REVIEW_SESSION_ROOT = Path("/mnt/c/Users/erfan/.codex/sessions")
 MAX_REVIEW_SESSION_BYTES = 32 * 1024 * 1024
+MAX_WRITER_SESSION_BYTES = 128 * 1024 * 1024
 REQUIRED_CHECKS = frozenset(
     {"source_integrity", "unit", "security", "dependencies", "licenses", "secrets", "test_integrity", "traceability", "ci"}
 )
@@ -101,6 +102,7 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
 
     require(run.get("schema_version") == 2, "unsupported schema_version")
     require(bool(re.fullmatch(r"ENG-RUN-[A-Za-z0-9_-]+", str(run.get("run_id", "")))), "invalid run_id")
+    require(type(run.get("pr_number")) is int and run["pr_number"] > 0, "PR number missing")
     require(run.get("mode") == "shadow", "M0 runner permits shadow mode only")
     require(run.get("ci_mode") in {"legacy_workflow_run", "protected_main_pr_target"}, "CI trust mode missing or invalid")
     require(run.get("repository") == "xbroute/hayool-os", "repository mismatch")
@@ -120,6 +122,9 @@ def evaluate(run: dict, root: Path, expected_sha: str) -> list[str]:
     require(writer.get("branch") == run.get("branch") and str(run.get("branch", "")).startswith("codex/"), "writer branch mismatch")
     require(writer.get("read_only") is False, "writer role invalid")
     require(all(writer.get(k) for k in ("gateway", "requested_provider", "effective_provider", "requested_model", "effective_model")) and writer.get("identity_verified") is True, "writer provider/model identity disclosure missing")
+    require(writer.get("id") == "/root" and bool(SESSION_ID.fullmatch(str(writer.get("session_id", ""))))
+            and bool(re.fullmatch(r"[A-Za-z0-9-]+", str(writer.get("github_login", "")))),
+            "writer session or GitHub identity missing")
     try:
         decided = _time(run["decided_at"])
         issued = _time(writer["lease_issued_at"])
@@ -281,7 +286,7 @@ def verify_protected_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
             return ["protected-main report digest mismatch"]
         report = json.loads(report_bytes)
         pr_number = report.get("pr_number")
-        if type(pr_number) is not int or pr_number <= 0:
+        if type(pr_number) is not int or pr_number <= 0 or pr_number != run.get("pr_number"):
             return ["protected-main PR number missing"]
         live_pr = _github_json(f"pulls/{pr_number}")
         main_ref = _github_json("git/ref/heads/main")
@@ -438,7 +443,8 @@ def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
         artifacts = _github_json(f"actions/runs/{run_id}/artifacts").get("artifacts", [])
         matching_prs = [
             pr for pr in observed.get("pull_requests", [])
-            if pr.get("base", {}).get("sha") == run.get("base_sha")
+            if pr.get("number") == run.get("pr_number")
+            and pr.get("base", {}).get("sha") == run.get("base_sha")
             and pr.get("head", {}).get("sha") == expected_sha
             and pr.get("head", {}).get("ref") == run.get("branch")
             and pr.get("base", {}).get("repo", {}).get("name") == "hayool-os"
@@ -566,6 +572,68 @@ def verify_github_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
         return ["GitHub CI could not be verified through the Actions API"]
 
 
+def verify_writer_session(run: dict, sessions_root: Path = REVIEW_SESSION_ROOT) -> list[str]:
+    """Observe the scoped writer's effective model in the app session log."""
+    writer = run.get("writer")
+    if not isinstance(writer, dict) or writer.get("id") != "/root":
+        return ["scoped writer record missing"]
+    session_id = writer.get("session_id")
+    if not isinstance(session_id, str) or SESSION_ID.fullmatch(session_id) is None:
+        return ["writer session ID missing"]
+    try:
+        trusted_root = sessions_root.resolve(strict=True)
+        matches = list(trusted_root.glob(f"????/??/??/rollout-*-{session_id}.jsonl"))
+        if len(matches) != 1:
+            raise ValueError("writer session missing or ambiguous")
+        path = matches[0]
+        if path.is_symlink() or not path.resolve(strict=True).is_relative_to(trusted_root):
+            raise ValueError("writer session escaped trusted root")
+        if path.stat().st_size > MAX_WRITER_SESSION_BYTES:
+            raise ValueError("writer session exceeds limit")
+        raw = path.read_bytes()
+        if len(raw) > MAX_WRITER_SESSION_BYTES:
+            raise ValueError("writer session exceeds limit")
+        rows = [json.loads(line) for line in raw.splitlines()]
+        if not rows or rows[0].get("type") != "session_meta":
+            raise ValueError("writer session metadata missing")
+        meta = rows[0].get("payload") or {}
+        if (meta.get("id") != session_id or meta.get("agent_path") is not None
+                or meta.get("parent_thread_id") is not None
+                or meta.get("model_provider") != writer.get("effective_provider")):
+            raise ValueError("writer session identity/provider mismatch")
+        models = [(row.get("payload") or {}).get("model") for row in rows
+                  if row.get("type") == "turn_context"]
+        if not models or not isinstance(models[-1], str) or models[-1] != writer.get("effective_model"):
+            raise ValueError("writer effective model differs from session")
+        return []
+    except (OSError, ValueError, TypeError, AttributeError, UnicodeError):
+        return ["writer session/provider/model could not be independently observed"]
+
+
+def verify_writer_github(run: dict, expected_sha: str) -> list[str]:
+    """Bind the local writer claim to GitHub's live PR and commit identity."""
+    try:
+        writer = run["writer"]
+        number = run["pr_number"]
+        pr = _github_json(f"pulls/{number}")
+        commit = _github_json(f"commits/{expected_sha}")
+        login = writer["github_login"]
+        if not (pr.get("number") == number and pr.get("state") == "open"
+                and pr.get("user", {}).get("login") == login
+                and pr.get("head", {}).get("sha") == expected_sha
+                and pr.get("head", {}).get("ref") == run.get("branch")
+                and pr.get("head", {}).get("repo", {}).get("full_name") == run.get("repository")
+                and pr.get("base", {}).get("sha") == run.get("base_sha")
+                and commit.get("sha") == expected_sha
+                and commit.get("author", {}).get("login") == login
+                and commit.get("committer", {}).get("login") == login):
+            return ["writer GitHub login differs from live PR/commit author"]
+        return []
+    except (KeyError, OSError, ValueError, TypeError, AttributeError,
+            subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return ["writer GitHub PR/commit identity could not be verified"]
+
+
 def verify_reviewer_sessions(run: dict, root: Path, expected_sha: str,
                              sessions_root: Path = REVIEW_SESSION_ROOT) -> list[str]:
     """Match each review byte-for-byte to an independent Codex final answer.
@@ -670,8 +738,8 @@ def verify_reviewer_sessions(run: dict, root: Path, expected_sha: str,
                 raise ValueError("reviewer final answer does not bind exact SHA and findings")
         except (OSError, ValueError, TypeError, AttributeError, UnicodeError):
             errors.append(f"reviewer {index} external session/report verification failed")
-    if len(parent_ids) != 1:
-        errors.append("reviewers do not belong to one independent task tree")
+    if parent_ids != {(run.get("writer") or {}).get("session_id")}:
+        errors.append("reviewers do not belong to the scoped writer task tree")
     return errors
 
 
@@ -697,6 +765,8 @@ def main() -> int:
         parser.error("--sha must be a 40-character lowercase commit SHA")
     run = json.loads(args.run_file.read_text(encoding="utf-8"))
     errors = evaluate(run, args.root, args.sha)
+    errors.extend(verify_writer_session(run))
+    errors.extend(verify_writer_github(run, args.sha))
     errors.extend(verify_reviewer_sessions(run, args.root, args.sha))
     errors.extend(verify_changed_paths(run, args.sha))
     errors.extend(verify_github_ci(run, args.root, args.sha))

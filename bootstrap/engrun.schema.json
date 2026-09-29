@@ -7,6 +7,7 @@
   "required": [
     "schema_version",
     "run_id",
+    "pr_number",
     "mode",
     "ci_mode",
     "repository",
@@ -35,6 +36,7 @@
       "type": "string",
       "pattern": "^ENG-RUN-[A-Za-z0-9_-]+$"
     },
+    "pr_number": {"type": "integer", "minimum": 1},
     "mode": {
       "const": "shadow"
     },
@@ -196,7 +198,9 @@
         "gateway",
         "requested_provider",
         "effective_provider",
-        "identity_verified"
+        "identity_verified",
+        "session_id",
+        "github_login"
       ],
       "properties": {
         "id": {
@@ -239,7 +243,9 @@
         },
         "identity_verified": {
           "type": "boolean"
-        }
+        },
+        "session_id": {"type": "string", "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"},
+        "github_login": {"type": "string", "pattern": "^[A-Za-z0-9-]+$"}
       }
     },
     "reviewer": {
