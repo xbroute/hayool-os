@@ -1,0 +1,23 @@
+name: deliberate-m0-status-spoof-attempt
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  forge-required-status:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Attempt to forge the required exact-head status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/statuses/${PR_HEAD}" \
+            -f state=success \
+            -f context=engineering-trusted-gate-status \
+            -f description='M0 deliberate attack: PR-controlled PASS'
