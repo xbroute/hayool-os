@@ -11,6 +11,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from bootstrap import engrun as engrun_module  # noqa: E402
 from bootstrap.engrun import REQUIRED_CHECKS, verify_protected_ci  # noqa: E402
 
 
@@ -147,8 +148,17 @@ class ProtectedRunBindingTests(unittest.TestCase):
         self.zips = {901: baseline_zip, 902: gate_zip}
 
     def verify(self):
+        production_json = engrun_module._github_json
+
+        def objects_or_production_status(path):
+            if path.startswith("statuses/"):
+                return production_json(path)
+            return self.responses[path]
+
         with patch("bootstrap.engrun._github_json",
-                   side_effect=lambda path: self.responses[path]), \
+                   side_effect=objects_or_production_status), \
+             patch("bootstrap.engrun.subprocess.check_output",
+                   return_value=json.dumps(self.responses[f"statuses/{HEAD}"])), \
              patch("bootstrap.engrun._artifact_zip",
                    side_effect=lambda artifact_id: self.zips[artifact_id]):
             return verify_protected_ci(self.run, self.root, HEAD)

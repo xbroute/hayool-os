@@ -1,4 +1,12 @@
-# Engineering Bootstrap live status after protected-main activation — 2026-09-29 UTC
+# Engineering Bootstrap live status after migration review — 2026-09-29 UTC
+
+**M0.0 = PENDING; M0.2 = PENDING.** The initial trust-migration PR #7 head `749976af59f414589ae5397e723ff14fafd2a340` failed its real required status in [run 36527802611](https://github.com/xbroute/hayool-os/actions/runs/36527802611). Its candidate check rejected frozen `bootstrap/` edits under accepted ADR-034, and the old main verifier rejected GitHub's candidate-SHA run metadata. An independent exact-SHA Engineering review found another code P1: the proposed ENG-RUN verifier called its object-only GitHub parser for the direct statuses endpoint, which actually returns an array. A regression using the production parser failed before the correction and passed after a bounded, list-typed status parser was added. The isolated unit runner returned no errors; 36 unit, 10 target-gate and 14 historical gate tests passed locally. These results apply to an unmerged candidate repair and cannot close the live operational P1. PR #7 needs a new exact-head CI run and independent reviews after the repair is committed. No authorized migration merge or final ENG-RUN exists.
+
+The live protected `main` remains `9af7ac8a4b8cd7ea96c27a2eb5f4c69c92d33659`; policy 5892 and its strict required trusted status remain active. A read-only recovery audit found no ordinary PR path through the current fail-closed gate because ADR-034 freezes the trust code needed for its repair. A separate Owner-approved, independently reviewed trust migration and genuine non-author GitHub review are still required. Merely removing the failed required check would be a protection exception and would not by itself establish M0.0 PASS. M0.2 and V1.0 have not started.
+
+---
+
+# Historical Engineering Bootstrap live status after protected-main activation — 2026-09-29 UTC
 
 **M0.0 = PENDING; M0.2 = PENDING.** PR #1 head `b8853c7a59a34eaca8bcaa5a153d949f0b275069` was approved by non-author `erfanxt` and merged by that account. The live protected `main` SHA is `9af7ac8a4b8cd7ea96c27a2eb5f4c69c92d33659`, with the same tree as the approved head. Actions policy 5892 reads back `active`, targets `~ALL` workflow paths and allows only `pull_request_target`. `main` now strictly requires `engineering-trusted-gate-status` from GitHub Actions App ID 15368; its PR, non-author review, stale/last-push review, admin, no-force-push and no-delete protections remain active.
 

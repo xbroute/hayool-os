@@ -1,4 +1,16 @@
-# Engineering Bootstrap live next actions after protected-main activation — 2026-09-29 UTC
+# Engineering Bootstrap live next actions after migration review — 2026-09-29 UTC
+
+**M0.0 = PENDING; M0.2 = PENDING.** An independent review of PR #7's first head found that its new ENG-RUN verifier used an object-only parser for GitHub's array-valued direct statuses endpoint. A production-parser regression failed before the fix and passed after the bounded list parser was added. Local isolated unit and gate suites pass, but the current protected-main gate still rejects trust-code changes and has the original run-SHA bug.
+
+1. Commit and freeze the narrow status-parser repair on PR #7, run exact-head GitHub CI, verify the downloadable artifacts and obtain two new independent read-only reviews of that exact SHA. Record the expected current-main check failure as failure; never treat candidate tests or reviewer votes as a substitute.
+2. Obtain explicit Owner authorization for a separately reviewed, auditable migration path. The current required status cannot pass for a PR that changes its own frozen trust code. Keep policy 5892, non-author review, strict checks, admin enforcement and no-force protections in force except for a specifically approved, time-bounded transition. Merely removing the failed check cannot count as M0.0 evidence.
+3. After the repaired policy actually reaches protected `main`, read back main SHA, policy and protection; rerun Shadow PR #2, failure-injection PR #3 and spoof PR #6 on the new exact base; bind live run/job/artifact/status evidence and perform independent exact-SHA reviews. Only then generate a final ENG-RUN and decide M0.0. Start M0.2 only after genuine M0.0 PASS, and stop before V1.0.
+
+Slack is not an M0.0 dependency.
+
+---
+
+# Historical Engineering Bootstrap live next actions after protected-main activation — 2026-09-29 UTC
 
 **M0.0 = PENDING; M0.2 = PENDING.** PR #1 has a real non-author approval and merge; policy 5892 and the strict required trusted status are active and read back. Protected-main Shadow run `36525390832` exposed a fail-closed P1 in GitHub API SHA provenance, repeated in ENG-RUN. The `pull_request_target` API run/job/artifact head is the PR candidate, while runner `GITHUB_SHA` is the main policy SHA. The current main gate cannot PASS, and ADR-034 forbids silently changing trust code through an ordinary M0 PR. PR #6's spoof workflow was server-blocked with zero jobs, and PR #3's kill-switch injection failed, but neither substitutes for a successful repaired Shadow run.
 

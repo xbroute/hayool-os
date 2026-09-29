@@ -246,6 +246,20 @@ def _github_json(path: str) -> dict:
     return value
 
 
+def _github_statuses(sha: str) -> list[dict]:
+    """Read a bounded page of direct commit statuses with creator identity."""
+    if not SHA.fullmatch(sha):
+        raise ValueError("invalid status SHA")
+    raw = subprocess.check_output(
+        ["gh", "api", f"repos/xbroute/hayool-os/statuses/{sha}?per_page=100"],
+        text=True, timeout=30,
+    )
+    value = json.loads(raw)
+    if not isinstance(value, list) or len(value) > 100 or any(not isinstance(item, dict) for item in value):
+        raise ValueError("GitHub statuses response is not a bounded object list")
+    return value
+
+
 def _download_baseline(run_id: str, artifact_name: str) -> dict:
     with tempfile.TemporaryDirectory(prefix="hayool-m0-artifact-") as directory:
         subprocess.run(
@@ -442,7 +456,7 @@ def verify_protected_ci(run: dict, root: Path, expected_sha: str) -> list[str]:
                    for c in required) or protection.get("required_status_checks", {}).get("strict") is not True:
             return ["protected main does not require the trusted exact-head status from Actions"]
         # The combined status endpoint omits creator; use the direct status list.
-        statuses = _github_json(f"statuses/{expected_sha}")
+        statuses = _github_statuses(expected_sha)
         matching = [s for s in statuses if s.get("context") == "engineering-trusted-gate-status"]
         if not matching or not (
             matching[0].get("state") == "success"
